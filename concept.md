@@ -159,7 +159,7 @@ The engine is pure Python, deterministic, and has no knowledge of the LLM. Given
 4. **Weighting:** `weight = planet weight × aspect strength × orb tightness`.
    - The Moon gets a high weight — it moves ~13°/day and provides the day-to-day variety.
    - Slow planets (Jupiter–Pluto) are capped to **one background theme**, otherwise the same transit would dominate for weeks.
-5. **Categories:** each factor contributes to one or more categories via its planets and houses (starting mapping, to be tuned):
+5. **Categories:** each aspect contributes to one or more categories via its planets and houses; a placement ("Venus in your 5th house") only via its house, otherwise e.g. Venus would push every love score up every day (starting mapping, to be tuned):
 
    | Category | Planets | Houses |
    |---|---|---|
@@ -168,7 +168,7 @@ The engine is pure Python, deterministic, and has no knowledge of the LLM. Given
    | Energy | Mars, Sun | 1, 6 |
    | Mood | Moon, Neptune | 4, 12 |
 
-   Harmonious aspects (trine, sextile) raise a score, tense ones (square, opposition) lower it, and conjunctions follow the planet's nature. Each category is normalized to **1–5 paws**; the overall day score (→ Mira's pose) is the weighted average, rounded.
+   Harmonious aspects (trine, sextile) raise a score, tense ones (square, opposition) lower it, and conjunctions follow the planet's nature. The background theme counts half. Each category is normalized to **1–5 paws** (smooth curve, tuned so that 1 and 5 paws are rare, ~7% each); the overall day score (→ Mira's pose) is the weighted average, rounded.
 6. **Selection:** the top 3–5 factors are passed on, always including at least one Moon factor. If the Moon makes no aspect that day, the Moon's natal house serves as the Moon factor (it always exists).
 7. **Empty categories:** a category without any factor gets a neutral score of 3 and keywords from the Moon's sign and house.
 

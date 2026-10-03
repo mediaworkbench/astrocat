@@ -1,0 +1,11 @@
+# Fictional demo profile — birth time unknown (noon fallback, solar houses).
+display_name: Sam
+language: en
+current_timezone: Europe/London
+birth:
+  date: 1995-07-23
+  time: null
+  place: Bristol, GB
+  latitude: 51.4545
+  longitude: -2.5879
+  timezone: Europe/London

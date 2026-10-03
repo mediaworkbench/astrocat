@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Generated reports
+review*.html
+
+# Local config and secrets
+.env
+
+# macOS
+.DS_Store

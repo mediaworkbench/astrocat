@@ -1,0 +1,11 @@
+# Fictional demo profile — birth time known.
+display_name: Anna
+language: de
+current_timezone: Europe/Berlin
+birth:
+  date: 1991-04-17
+  time: "08:20"
+  place: Hamburg, DE
+  latitude: 53.5511
+  longitude: 9.9937
+  timezone: Europe/Berlin

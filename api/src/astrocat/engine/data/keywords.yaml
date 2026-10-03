@@ -1,0 +1,83 @@
+# Interpretation keywords (concept §5.4). Written for AstroCat — do not copy
+# texts from books or websites into this file. English only; the LLM writes
+# the final prose in the user's language.
+
+# What a transiting planet brings into the day.
+planets:
+  sun: [visibility, self-expression, vitality, clarity]
+  moon: [feelings, instincts, comfort, sensitivity]
+  mercury: [conversations, ideas, messages, quick thinking]
+  venus: [affection, pleasure, charm, harmony]
+  mars: [drive, courage, impatience, action]
+  jupiter: [optimism, growth, generosity, opportunity]
+  saturn: [responsibility, patience, structure, limits]
+  uranus: [surprises, independence, sudden change, fresh ideas]
+  neptune: [dreams, intuition, haziness, compassion]
+  pluto: [intensity, transformation, letting go, inner strength]
+
+# Which part of the user is touched (natal point).
+natal_points:
+  sun: [your sense of self, your confidence]
+  moon: [your emotional needs, your inner world]
+  mercury: [the way you think, the way you talk]
+  venus: [your relationships, what you enjoy]
+  mars: [your energy, your ambitions]
+  jupiter: [your hopes, your sense of meaning]
+  saturn: [your duties, your boundaries]
+  uranus: [your need for freedom, your originality]
+  neptune: [your imagination, your ideals]
+  pluto: [your deeper motives, your resilience]
+  ascendant: [how you come across, first impressions]
+
+natures:
+  harmonious: [ease, flow, support, good timing]
+  tense: [friction, challenge, growth through effort, mixed signals]
+  neutral: [focus, emphasis, intensity]
+
+houses:
+  1: [personal appearance, fresh starts]
+  2: [money and possessions, self-worth]
+  3: [everyday conversations, short trips]
+  4: [home and family, roots]
+  5: [romance and play, creativity]
+  6: [daily routines, health habits]
+  7: [partnerships, one-on-one encounters]
+  8: [shared resources, closeness]
+  9: [learning, wider horizons]
+  10: [career, public image]
+  11: [friends, community]
+  12: [rest and retreat, the subconscious]
+
+# The emotional color of the day, by the Moon's sign.
+moon_signs:
+  aries: [restless, eager]
+  taurus: [grounded, cozy]
+  gemini: [curious, chatty]
+  cancer: [tender, nostalgic]
+  leo: [playful, warm-hearted]
+  virgo: [tidy-minded, practical]
+  libra: [sociable, balanced]
+  scorpio: [deep, private]
+  sagittarius: [adventurous, upbeat]
+  capricorn: [focused, serious]
+  aquarius: [independent, unconventional]
+  pisces: [dreamy, intuitive]
+
+# Category flavor by score band: low = 1-2 paws, mid = 3, high = 4-5.
+category_bands:
+  love:
+    low: [misunderstandings, needing space, patience with loved ones]
+    mid: [steady bonds, small gestures, quiet closeness]
+    high: [warmth, easy connection, flirtation, feeling appreciated]
+  work:
+    low: [friction, delays, patience with structures]
+    mid: [routine progress, steady effort, one thing at a time]
+    high: [momentum, recognition, good ideas, productive focus]
+  energy:
+    low: [low battery, pace yourself, rest]
+    mid: [steady, balanced pace, gentle movement]
+    high: [drive, momentum, feeling strong, zest]
+  mood:
+    low: [sensitive, overthinking, need for comfort]
+    mid: [calm, even-tempered, reflective]
+    high: [cheerful, light-hearted, optimistic]

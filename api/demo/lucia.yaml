@@ -1,0 +1,11 @@
+# Fictional demo profile — birth time known.
+display_name: Lucía
+language: es
+current_timezone: Europe/Madrid
+birth:
+  date: 1987-11-02
+  time: "22:45"
+  place: Sevilla, ES
+  latitude: 37.3891
+  longitude: -5.9845
+  timezone: Europe/Madrid

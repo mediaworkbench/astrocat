@@ -1,0 +1,111 @@
+# Tunable engine settings (concept §5). Any change here changes the engine
+# version fingerprint, so cached readings are regenerated automatically.
+
+bodies: [sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto]
+
+# Transit orbs in degrees. The Moon has no orb: its aspects count when they
+# become exact during the local day (00:00-24:00).
+orbs:
+  sun: 2.0
+  mercury: 2.0
+  venus: 2.0
+  mars: 2.0
+  jupiter: 1.5
+  saturn: 1.5
+  uranus: 1.0
+  neptune: 1.0
+  pluto: 1.0
+
+aspects:
+  conjunction: { angle: 0, strength: 1.0 }
+  opposition: { angle: 180, strength: 0.9 }
+  square: { angle: 90, strength: 0.9 }
+  trine: { angle: 120, strength: 0.8 }
+  sextile: { angle: 60, strength: 0.6 }
+
+# +1 harmonious, -1 tense. Conjunctions take their value from the planets' tones.
+aspect_values:
+  trine: 1.0
+  sextile: 1.0
+  square: -1.0
+  opposition: -1.0
+
+# Basic character of each planet, used for conjunctions and placements.
+tones:
+  sun: 0.5
+  moon: 0.0
+  mercury: 0.0
+  venus: 1.0
+  mars: -0.5
+  jupiter: 1.0
+  saturn: -1.0
+  uranus: -0.5
+  neptune: 0.0
+  pluto: -0.5
+  ascendant: 0.0
+
+# Conjunction value = transit tone + natal_tone_share * natal tone, clamped to [-1, 1].
+conjunction_natal_tone_share: 0.5
+
+transit_weights:
+  moon: 1.0
+  sun: 0.8
+  venus: 0.8
+  mars: 0.8
+  mercury: 0.7
+  jupiter: 0.6
+  saturn: 0.6
+  uranus: 0.5
+  neptune: 0.5
+  pluto: 0.5
+
+natal_weights:
+  sun: 1.0
+  moon: 0.9
+  ascendant: 0.9
+  venus: 0.7
+  mars: 0.7
+  mercury: 0.6
+  jupiter: 0.5
+  saturn: 0.5
+  uranus: 0.3
+  neptune: 0.3
+  pluto: 0.3
+
+# Without a birth time the natal Moon is uncertain by up to ~7 degrees.
+unknown_time_natal_moon_factor: 0.4
+
+# Orb tightness for non-Moon aspects: floor + (1 - floor) * (1 - orb / max_orb).
+tightness_floor: 0.25
+# Moon aspects: 1.0 if exact at noon, falling linearly to this value at midnight.
+moon_window_min_tightness: 0.5
+
+# Only the strongest factor of these planets is kept, marked as background theme.
+slow_planets: [jupiter, saturn, uranus, neptune, pluto]
+# A background theme lasts for weeks; it colors the scores only partly.
+background_score_share: 0.5
+
+placements:
+  bodies: [moon, sun, mercury, venus, mars]
+  weight: 0.3
+
+categories:
+  love: { planets: [venus, moon], houses: [5, 7] }
+  work: { planets: [sun, mercury, saturn, jupiter], houses: [6, 10] }
+  energy: { planets: [mars, sun], houses: [1, 6] }
+  mood: { planets: [moon, neptune], houses: [4, 12] }
+
+# Paws = 3 + 2 * tanh((raw - center) / scale), rounded, clamped to 1-5.
+# Tuned on 40 random charts x 20 days (2026-10-03): gives roughly 7/25/33/26/7 %.
+# The center offsets a small positive bias (more harmonious than tense aspect types).
+score_scale: 1.0
+score_center: 0.1
+
+overall_weights: { love: 1.0, work: 1.0, energy: 1.0, mood: 1.0 }
+
+poses: { 1: sleepy, 2: cautious, 3: calm, 4: playful, 5: radiant }
+
+selection:
+  min: 3
+  max: 5
+  min_weight: 0.15

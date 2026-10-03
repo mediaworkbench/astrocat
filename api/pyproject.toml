@@ -1,0 +1,35 @@
+[project]
+name = "astrocat"
+version = "0.1.0"
+description = "AstroCat API and astrology engine"
+readme = "README.md"
+requires-python = ">=3.12"
+license = "AGPL-3.0-only"
+dependencies = [
+    "click>=8.5.0",
+    "libephemeris>=3.2.1",
+    "pyyaml>=6.0.3",
+]
+
+[project.scripts]
+astrocat = "astrocat:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.10",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
