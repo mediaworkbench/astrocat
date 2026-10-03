@@ -4,7 +4,7 @@
 
 AstroCat is a small, self-hosted horoscope app for a household or a group of friends. Every morning, Mira, a cat with a fondness for the night sky, writes each user a personal reading based on their own birth chart and today's planets: in English, Spanish or German, with paw ratings for love, work, energy and mood, and one concrete piece of advice.
 
-It runs entirely on one Mac at home: a deterministic astrology engine decides *what* the day looks like, and a local language model ([Ollama](https://ollama.com)) only decides *how to say it*. Birth data never leaves the machine.
+It runs entirely on one computer at home (a Mac or a Linux machine such as a Raspberry Pi): a deterministic astrology engine decides *what* the day looks like, and a local language model ([Ollama](https://ollama.com)) only decides *how to say it*. Birth data never leaves the machine.
 
 ![AstroCat key visual](astrocat.png)
 
@@ -34,24 +34,24 @@ It runs entirely on one Mac at home: a deterministic astrology engine decides *w
 
 ### Running it
 
-- Readings for today, tomorrow and the day after are prepared in the background, in each user's timezone, and caught up automatically if the Mac was asleep or Ollama was down
+- Readings for today, tomorrow and the day after are prepared in the background, in each user's timezone, and caught up automatically if the server was asleep or Ollama was down
 - Everything local: no telemetry, no cloud services, no external API calls at runtime
-- One `docker compose up` for the app, API and database; Ollama runs natively on the Mac
+- One `docker compose up` for the app, API and database; Ollama runs natively on the host
 
 ## How it works
 
 ```text
  Phone (browser / home-screen app)
-            │  http://<mac-ip>
+            │  http://<server-ip>
             ▼
- ┌──────────── Docker on the Mac ────────────┐
+ ┌──────────── Docker on the server ─────────┐
  │  web  (Caddy: app + /api proxy)  :80      │
  │  api  (FastAPI: engine, readings, login,  │
  │        scheduler)                         │──► db (PostgreSQL)
  └──────────────┬────────────────────────────┘
                 │ host.docker.internal:11434
                 ▼
-       Ollama on macOS (gemma4:e4b)
+       Ollama on the host (gemma4:e4b)
 ```
 
 1. The **engine** (Python, [`libephemeris`](https://github.com/g-battaglia/libephemeris)) computes the birth chart and today's transits, scores the four categories, picks the strongest influences and Mira's pose. Same input, same result.
@@ -62,8 +62,8 @@ The full design, decisions and their reasons are in [concept.md](concept.md); de
 
 ## Requirements
 
-- **A Mac that stays on** in your home network (tested on macOS 26 with Apple silicon and 36 GB RAM). The language model needs a few GB of free memory while it writes.
-- **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**
+- **A computer that stays on** in your home network. Tested on macOS 26 with Apple silicon and 36 GB RAM, and on a Raspberry Pi 5 with 16 GB RAM (works, but slowly: see [Raspberry Pi and Linux](#raspberry-pi-and-linux)). The language model needs a few GB of free memory while it writes.
+- **Docker:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) on macOS, Docker Engine with the compose plugin on Linux
 - **[Ollama](https://ollama.com)** with the model `gemma4:e4b` (about 9.6 GB download)
 - Phones in the same Wi-Fi (any modern browser; iPhone and Android)
 - About 12 GB of disk space (model, images, database)
@@ -72,7 +72,7 @@ The full design, decisions and their reasons are in [concept.md](concept.md); de
 
 ### 1. Install Ollama and the model
 
-Install Ollama from [ollama.com](https://ollama.com) (or `brew install ollama`), start it, then:
+Install Ollama from [ollama.com](https://ollama.com) (on macOS also `brew install ollama`; on Linux `curl -fsSL https://ollama.com/install.sh | sh`), start it, then:
 
 ```sh
 ollama pull gemma4:e4b
@@ -134,7 +134,7 @@ The command asks for a password. Usernames: 3–32 characters, lowercase letters
 
 ### 6. Open it on the phones
 
-1. Find the Mac's IP address: **System Settings → Wi-Fi → Details**, or `ipconfig getifaddr en0`.
+1. Find the server's IP address. macOS: **System Settings → Wi-Fi → Details**, or `ipconfig getifaddr en0`. Linux: `hostname -I`.
 2. On a phone in the same Wi-Fi, open `http://<that-ip>/`.
 3. Log in (or create an account) and complete onboarding: name, language, form of address, birth date and time, birth place.
 4. Add it to the home screen:
@@ -145,10 +145,33 @@ The first reading takes a little longer (about 10–20 s) while Ollama loads the
 
 ### 7. Make it reliable
 
-- **Fixed IP:** reserve the Mac's IP in your router (DHCP reservation), so the address on the phones keeps working.
-- **Firewall:** if the macOS firewall is on and the phones can't connect, allow incoming connections for Docker (System Settings → Network → Firewall → Options).
-- **Start at login:** enable "Start Docker Desktop when you sign in" in Docker Desktop's settings, and keep Ollama in your login items. The containers restart on their own.
-- **Sleep:** the app is only reachable while the Mac is awake. On a laptop, keep it on power and prevent automatic sleep (System Settings → Battery/Energy). Missed readings are generated the next time someone opens the app.
+- **Fixed IP:** reserve the server's IP in your router (DHCP reservation), so the address on the phones keeps working.
+- **Firewall:** if the phones can't connect, allow incoming connections on the app's port. macOS: allow Docker (System Settings → Network → Firewall → Options).
+- **Start automatically:** on macOS, enable "Start Docker Desktop when you sign in" in Docker Desktop's settings and keep Ollama in your login items. On Linux, Docker and Ollama run as system services. The containers restart on their own.
+- **Sleep:** the app is only reachable while the server is awake. On a laptop, keep it on power and prevent automatic sleep (System Settings → Battery/Energy). Missed readings are generated the next time someone opens the app.
+
+### Raspberry Pi and Linux
+
+The setup above works the same on Linux. A few differences:
+
+- **Ollama:** install it with the official script (above). Containers reach it through `host.docker.internal`, which `compose.yaml` maps to the host, so it must listen on the network: `sudo systemctl edit ollama`, add `Environment="OLLAMA_HOST=0.0.0.0"` under `[Service]`, then `sudo systemctl restart ollama`.
+- **Speed:** on a Raspberry Pi 5, `gemma4:e4b` needs about 2 minutes per reading. Set `OLLAMA_TIMEOUT=600` in `.env`, or the app falls back to the short template reading. `gemma4:e2b` is about twice as fast. Readings are prepared in the background, so the wait rarely shows.
+- **Behind an existing web server:** if port 80 is taken (e.g. by nginx), bind the app to localhost with `WEB_PORT=127.0.0.1:8094` and forward a port or host name to it:
+
+  ```nginx
+  server {
+      listen 8093;
+      server_name astrocat.local;   # your server's name
+
+      location / {
+          proxy_pass http://127.0.0.1:8094;
+          proxy_set_header Host $host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_read_timeout 300s;
+      }
+  }
+  ```
 
 ## Everyday use
 
@@ -178,9 +201,9 @@ All settings live in `.env` (copied from [.env.example](.env.example)). After a 
 | `POSTGRES_PASSWORD` | — (required) | Database password |
 | `REGISTRATION_CODE` | empty | Invite code for **Create account** in the app; empty turns registration off |
 | `WEB_PORT` | `80` | Port of the app on your network |
-| `OLLAMA_BASE_URL` | empty | Where Ollama runs. Empty = on this Mac. Set it to use Ollama on another computer, e.g. `http://192.168.1.50:11434` (a bare host gets `http://` and port 11434 added) (that Ollama must listen on the network: `OLLAMA_HOST=0.0.0.0`) |
+| `OLLAMA_BASE_URL` | empty | Where Ollama runs. Empty = on the same computer as AstroCat. Set it to use Ollama on another computer, e.g. `http://192.168.1.50:11434` (a bare host gets `http://` and port 11434 added) (that Ollama must listen on the network: `OLLAMA_HOST=0.0.0.0`) |
 | `OLLAMA_MODEL` | `gemma4:e4b` | Model that writes the readings (`gemma4:e2b` is faster, but weaker in Spanish and German) |
-| `OLLAMA_TIMEOUT` | `120` | Seconds to wait for the model |
+| `OLLAMA_TIMEOUT` | `120` | Seconds to wait for the model (on a Raspberry Pi use about `600`) |
 | `SESSION_DAYS` | `90` | Login lifetime; renewed automatically while the app is used |
 | `COOKIE_SECURE` | `false` | Set to `true` once the app runs over HTTPS |
 | `SCHEDULER_ENABLED` | `true` | Background generation of daily readings |
@@ -195,12 +218,12 @@ Advanced (rarely needed): `LOGIN_MAX_FAILURES` (5) and `LOGIN_WINDOW_MINUTES` (1
 
 | Problem | What to check |
 | --- | --- |
-| Phone can't open the app | Same Wi-Fi? Correct IP? macOS firewall (step 7)? `curl http://<mac-ip>/api/health` from another computer |
+| Phone can't open the app | Same Wi-Fi? Correct IP? Firewall (step 7)? `curl http://<server-ip>/api/health` from another computer |
 | "Mira is reading the stars" takes very long | Is Ollama running (`ollama ps`)? The first reading after a restart loads the model. `docker compose logs api` shows each generation |
-| Readings say Mira "was a little sleepy" (short template reading) | Ollama wasn't reachable or the model kept failing the checks; see `docker compose logs api`. From the container: `docker compose exec api python -c "import httpx; print(httpx.get('http://host.docker.internal:11434/api/version').text)"`. If that fails, let Ollama listen on all interfaces: `launchctl setenv OLLAMA_HOST 0.0.0.0` and restart Ollama |
+| Readings say Mira "was a little sleepy" (short template reading) | Ollama wasn't reachable or the model kept failing the checks; see `docker compose logs api`. From the container: `docker compose exec api python -c "import httpx; print(httpx.get('http://host.docker.internal:11434/api/version').text)"`. If that fails, let Ollama listen on all interfaces (`OLLAMA_HOST=0.0.0.0`: `launchctl setenv OLLAMA_HOST 0.0.0.0` on macOS, a systemd override on Linux) and restart Ollama. `timed out` in the log: raise `OLLAMA_TIMEOUT` |
 | City search finds nothing | Run step 4 (`astrocat places import`) |
 | "Create account" is missing | `REGISTRATION_CODE` is empty, or the `api` container wasn't restarted after setting it |
-| Port 80 already in use | Set `WEB_PORT=8080` in `.env` and open `http://<mac-ip>:8080/` |
+| Port 80 already in use | Set `WEB_PORT=8080` in `.env` and open `http://<server-ip>:8080/`, or put it behind your existing web server ([Raspberry Pi and Linux](#raspberry-pi-and-linux)) |
 
 ## Development
 

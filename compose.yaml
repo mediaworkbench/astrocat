@@ -1,4 +1,4 @@
-# AstroCat services (concept §10): web (Caddy + app), api, db. Ollama runs natively on macOS, not in Docker.
+# AstroCat services (concept §10): web (Caddy + app), api, db. Ollama runs natively on the host, not in Docker.
 # Development: docker compose -f compose.yaml -f compose.dev.yaml up -d
 name: astrocat
 
@@ -23,7 +23,7 @@ services:
     env_file: .env
     environment:
       DATABASE_URL: postgresql+psycopg://astrocat:${POSTGRES_PASSWORD}@db:5432/astrocat
-      # Ollama on the Mac by default; set OLLAMA_BASE_URL in .env for another host.
+      # Ollama on the host by default; set OLLAMA_BASE_URL in .env for another host.
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
     extra_hosts:
       # Docker Desktop (macOS) provides host.docker.internal itself; on Linux (e.g. a Raspberry Pi) this maps it to the host.
