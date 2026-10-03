@@ -42,7 +42,13 @@ def add_date_fields(payload: dict[str, Any], day: date) -> dict[str, Any]:
 
 
 def _attempt(
-    client: ChatClient, messages: list[dict[str, str]], language: str, day: date, recent, temperature: float
+    client: ChatClient,
+    messages: list[dict[str, str]],
+    language: str,
+    gender: str,
+    day: date,
+    recent,
+    temperature: float,
 ) -> tuple:
     raw = client.chat(messages, OUTPUT_SCHEMA, temperature)
     try:
@@ -53,7 +59,7 @@ def _attempt(
     if errors:
         return raw, None, errors
     reading = repair(parsed)
-    return raw, reading, validate(reading, language, day, recent)
+    return raw, reading, validate(reading, language, day, recent, gender)
 
 
 def generate_from_payload(
@@ -65,6 +71,7 @@ def generate_from_payload(
 ) -> ReadingResult:
     recent = recent or []
     language = payload["language"]
+    gender = payload["user"]["grammatical_gender"]
     payload = add_date_fields(payload, day)
     messages = build_messages(payload, day, recent)
     result = ReadingResult(
@@ -81,7 +88,7 @@ def generate_from_payload(
     try:
         for temperature in TEMPERATURES[: 1 + MAX_RETRIES]:
             result.attempts += 1
-            raw, reading, errors = _attempt(client, messages, language, day, recent, temperature)
+            raw, reading, errors = _attempt(client, messages, language, gender, day, recent, temperature)
             if reading is not None and not errors:
                 result.status, result.reading = "ok", reading
                 break

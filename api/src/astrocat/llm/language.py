@@ -25,8 +25,17 @@ def pack(language: str) -> dict[str, Any]:
     data = yaml.safe_load((_DATA / f"{language}.yaml").read_bytes())
     data["jargon_re"] = [re.compile(p, re.IGNORECASE) for p in data["jargon"]]
     data["forbidden_re"] = [re.compile(p, re.IGNORECASE) for p in data["forbidden"]]
-    data["gendered_re"] = [re.compile(p, re.IGNORECASE) for p in data["gendered"]]
     return data
+
+
+# Endings that are wrong for each setting (see `gendered` in the language packs).
+_WRONG_ENDINGS = {"neutral": "[ao]", "feminine": "o", "masculine": "a"}
+
+
+@cache
+def gendered_patterns(language: str, gender: str) -> list[re.Pattern]:
+    forms = _WRONG_ENDINGS[gender]
+    return [re.compile(p.replace("{forms}", forms), re.IGNORECASE) for p in pack(language)["gendered"]]
 
 
 @cache

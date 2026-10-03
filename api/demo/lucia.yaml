@@ -1,6 +1,7 @@
 # Fictional demo profile — birth time known.
 display_name: Lucía
 language: es
+grammatical_gender: feminine  # neutral | feminine | masculine
 current_timezone: Europe/Madrid
 birth:
   date: 1987-11-02

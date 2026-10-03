@@ -12,6 +12,8 @@ import yaml
 from astrocat.engine.config import engine_version
 
 LANGUAGES = ("en", "es", "de")
+# How Mira addresses the reader where Spanish or German need a grammatical gender.
+GRAMMATICAL_GENDERS = ("neutral", "feminine", "masculine")
 
 
 class ProfileError(ValueError):
@@ -39,12 +41,14 @@ class Profile:
     language: str
     current_timezone: str
     birth: BirthData
+    grammatical_gender: str = "neutral"
 
     def input_hash(self) -> str:
-        """Hash of everything that determines the engine output (concept §8)."""
+        """Hash of everything that determines the reading, apart from language and date (concept §8)."""
         data = {
             "birth": asdict(self.birth),
             "current_timezone": self.current_timezone,
+            "grammatical_gender": self.grammatical_gender,
             "engine_version": engine_version(),
         }
         canonical = json.dumps(data, sort_keys=True, default=str)
@@ -83,6 +87,7 @@ def profile_from_dict(data: dict) -> Profile:
         profile = Profile(
             display_name=str(data["display_name"]),
             language=str(data.get("language", "en")),
+            grammatical_gender=str(data.get("grammatical_gender", "neutral")),
             current_timezone=_check_timezone(data["current_timezone"]),
             birth=BirthData(
                 date=birth_date,
@@ -98,6 +103,8 @@ def profile_from_dict(data: dict) -> Profile:
         raise ProfileError(f"missing field: {exc.args[0]}") from exc
     if profile.language not in LANGUAGES:
         raise ProfileError(f"language must be one of {LANGUAGES}")
+    if profile.grammatical_gender not in GRAMMATICAL_GENDERS:
+        raise ProfileError(f"grammatical_gender must be one of {GRAMMATICAL_GENDERS}")
     if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
         raise ProfileError("latitude/longitude out of range")
     return profile

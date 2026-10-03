@@ -80,10 +80,11 @@ Goal (see [concept.md](concept.md) §3, §6, §7, §13): engine payload → Mira
 - **v4 with `gemma4:e4b`, 3 × 14 days:** 42/42 ok, 0 fallbacks; first attempt DE 13, ES 9, EN 12; median 6.5–8.5 s, max 22 s. Best quality so far in all three languages: concrete ("ask a colleague about a process you haven't quite grasped", "frag spezifisch nach dem ersten Schritt"), varied cat touches ("Don't get tangled in the yarn", "hasta el bigote", "Fellknäuel an Ruhe"), weekdays always correct, no jargon. Cross-language run (Anna in English, 7 days): 7/7 on the first attempt.
 - **Decision:** `gemma4:e4b` is the default for all languages (`OLLAMA_MODEL` still overrides). `e2b` is fine for English but not good enough for Spanish and German.
 - **Known residuals (accepted for now):**
-  - Spanish grammatical gender: the model mostly falls back to the generic masculine ("obligado", "estancado", "quieto"); the regex check catches only common cases and costs retries. Open product question: neutral wording vs. a per-user grammatical-gender setting.
+  - Spanish with `neutral`: the model still slips into the generic masculine now and then; resolved for users who pick a form (see the setting below).
   - Favorite images repeat across days ("flotter Spaziergang" 6×, "maullido" 5×).
   - Occasional small German slips ("auch wenn es dir kostet", "Samstag's") and a nickname despite the rule ("kleine Maus").
   - Spanish occasionally slips into plural address ("os", "comáis") when talking about the reader and someone else.
+- **Grammatical gender as a per-user setting (decided 2026-10-03):** profile field `grammatical_gender` (`neutral` default, `feminine`, `masculine`), part of `input_hash`, passed in the payload. Per-language prompt hints for each value; the check rejects only the wrong forms (neutral: any gendered adjective). Lucía set to `feminine`: 14/14 ok, consistently feminine forms ("cómoda contigo misma", "agradecida"), zero gender rejections (v4: 3–5 per 14 days).
 - **Fix after v4:** English headlines lowercased weekdays ("for saturday") → sentence-case rule now keeps proper nouns capitalized.
 
 ## Open from M1
@@ -102,3 +103,4 @@ Goal (see [concept.md](concept.md) §3, §6, §7, §13): engine payload → Mira
 - City search (GeoNames `cities1000`, `timezonefinder`) → M3, with onboarding.
 - "Why Mira says this" texts in EN/ES/DE → M4 (the review report uses English descriptions).
 - Storing readings and recent-reading lookup from the database → M3 (M2 keeps recent readings in memory during a review run).
+- Form of address (`grammatical_gender`) in onboarding and settings, column in `users` → M3/M4 (the engine and LLM side is done).

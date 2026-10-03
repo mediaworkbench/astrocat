@@ -48,6 +48,8 @@ def test_input_hash_changes_with_birth_data(anna):
     changed = replace(anna, birth=replace(anna.birth, time=time(8, 21)))
     assert anna.input_hash() != changed.input_hash()
     assert anna.input_hash() == replace(anna, display_name="Other").input_hash()
+    # The grammatical gender changes the text, so it must produce a new reading.
+    assert anna.input_hash() != replace(anna, grammatical_gender="feminine").input_hash()
 
 
 def test_payload_contract(demo_profile):
@@ -111,6 +113,7 @@ def test_high_latitude():
         ({"time": 875}, "quoted"),
         ({"timezone": "Mars/Olympus"}, "unknown timezone"),
         ({"latitude": 95}, "out of range"),
+        ({"grammatical_gender": "other"}, "grammatical_gender"),
     ],
 )
 def test_profile_validation(change, message):
@@ -120,6 +123,9 @@ def test_profile_validation(change, message):
         "current_timezone": "Europe/Berlin",
         "birth": {"date": "1990-01-01", "latitude": 52.5, "longitude": 13.4, "timezone": "Europe/Berlin"},
     }
-    data["birth"] |= change
+    if "grammatical_gender" in change:
+        data |= change
+    else:
+        data["birth"] |= change
     with pytest.raises(ProfileError, match=message):
         profile_from_dict(data)

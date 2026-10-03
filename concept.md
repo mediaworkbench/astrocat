@@ -57,9 +57,9 @@
 | Screen | Content |
 |---|---|
 | Login | Username + password. No sign-up link (invite-only). |
-| Onboarding | Display name, language, birth date, birth time (optional, "I don't know" checkbox), birth place (city search), current timezone (prefilled from the browser). |
+| Onboarding | Display name, language, how Mira should address you (feminine / masculine / neutral forms; matters for Spanish and German), birth date, birth time (optional, "I don't know" checkbox), birth place (city search), current timezone (prefilled from the browser). |
 | Today | Mira in today's pose · headline · short summary · category cards with paw ratings · Mira's advice · expandable "Why Mira says this". |
-| Settings | Language, birth data, timezone, change password, logout, "Source code" link (§12). |
+| Settings | Language, form of address, birth data, timezone, change password, logout, "Source code" link (§12). |
 
 **Loading state:** if a reading is not ready yet, Mira is shown "reading the stars" (small animation) while it is generated on demand.
 
@@ -74,6 +74,7 @@
 - Curious, warm, confident, a little sassy.
 - Wise but never preachy; encouraging even on difficult days.
 - Speaks directly to the user ("you"), informal register: *du* in German, *tú* in Spanish.
+- Uses the grammatical gender the user chose (feminine / masculine); with "neutral" it rephrases instead of using gendered adjectives. The user's name is never sent to the LLM, so it cannot guess a gender from it.
 
 #### Voice rules
 
@@ -246,7 +247,8 @@ The engine produces a full output (positions, degrees, orbs, all factors), which
   "user": {
     "display_name": "Anna",
     "sun_sign": "libra",
-    "birth_time_known": true
+    "birth_time_known": true,
+    "grammatical_gender": "feminine"
   },
   "day": {
     "moon_sign": "pisces",
@@ -311,7 +313,7 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 ## 8. Generation and caching
 
-- **Cache key:** `(user_id, local_date, language, input_hash)`, where `input_hash` hashes the birth profile and `engine_version`. Editing birth data therefore produces a new reading automatically, without separate invalidation logic. Each reading also stores `engine_version`, `prompt_version`, and the model name.
+- **Cache key:** `(user_id, local_date, language, input_hash)`, where `input_hash` hashes the birth profile, the form of address, and `engine_version`. Editing birth data or the form of address therefore produces a new reading automatically, without separate invalidation logic. Each reading also stores `engine_version`, `prompt_version`, and the model name.
 - **Scheduled job:** shortly after midnight (in each user's timezone), generate that day's reading. With 3 users this is 3 LLM calls per day.
 - **On demand:** if a reading is missing (e.g. the Mac was asleep), it is generated when the user opens the app; Mira's loading animation covers the wait (expected: a few seconds).
 - **No duplicates:** a unique constraint on the cache key plus a `generating` status. If two requests arrive at once, the second one waits for the first instead of starting another LLM call.
@@ -380,7 +382,7 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 | Table | Key fields |
 |---|---|
-| `users` | id, username, password_hash, display_name, language, timezone, created_at |
+| `users` | id, username, password_hash, display_name, language, grammatical_gender (neutral / feminine / masculine), timezone, created_at |
 | `birth_profiles` | user_id, birth_date, birth_time (nullable), place_name, latitude, longitude, birth_timezone, utc_offset_override (nullable) |
 | `natal_charts` | user_id, engine_version, input_hash, chart_json, computed_at |
 | `daily_readings` | user_id, local_date, language, input_hash, engine_json, reading_json, status (generating / ok / fallback / failed), model, prompt_version, engine_version, created_at |

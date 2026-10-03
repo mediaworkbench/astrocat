@@ -24,14 +24,14 @@ class RecentReading:
         return " ".join(self.summary.split()[:4])
 
 
-def system_prompt(language: str) -> str:
+def system_prompt(language: str, gender: str = "neutral") -> str:
     p = pack(language)
     example = json.dumps(p["example"], ensure_ascii=False, indent=2)
     return system_prompt_template().format(
         language=p["name"],
         register=p["register"],
         avoid=", ".join(f'"{phrase}"' for phrase in p["avoid"]),
-        gender_hint=p["gender_hint"],
+        gender_hint=p["gender_hint"][gender],
         headline_case=p["headline_case"],
         example=example,
     )
@@ -83,7 +83,7 @@ def brief(payload: dict[str, Any], day: date, recent: list[RecentReading]) -> st
 
 def build_messages(payload: dict[str, Any], day: date, recent: list[RecentReading]) -> list[dict[str, str]]:
     return [
-        {"role": "system", "content": system_prompt(payload["language"])},
+        {"role": "system", "content": system_prompt(payload["language"], payload["user"]["grammatical_gender"])},
         {"role": "user", "content": brief(payload, day, recent)},
     ]
 

@@ -124,6 +124,30 @@ def test_validation_catches_problems(lang, changes, error):
     assert any(error in e for e in errors), errors
 
 
+@pytest.mark.parametrize(
+    ("gender", "text", "wrong"),
+    [
+        ("neutral", "Te sientes muy tranquila hoy.", True),
+        ("neutral", "Te sientes muy tranquilo hoy.", True),
+        ("feminine", "Te sientes muy tranquila hoy.", False),
+        ("feminine", "Te sientes muy tranquilo hoy.", True),
+        ("masculine", "Te sientes muy tranquilo hoy.", False),
+        ("masculine", "Dedica un rato a ti misma.", True),
+    ],
+)
+def test_gender_check_follows_the_setting(gender, text, wrong):
+    errors = validate(_with(GOOD["es"], mood=text), "es", SATURDAY, [], gender)
+    assert any("gender" in e for e in errors) == wrong, errors
+
+
+@pytest.mark.parametrize("gender", ["neutral", "feminine", "masculine"])
+def test_prompt_gender_hint(payload, gender):
+    p = json.loads(json.dumps(payload)) | {"language": "es"}
+    p["user"]["grammatical_gender"] = gender
+    system = build_messages(p, SATURDAY, [])[0]["content"]
+    assert pack("es")["gender_hint"][gender] in system
+
+
 def test_language_check():
     errors = validate(GOOD["de"], "en", SATURDAY, [])
     assert any("English" in e for e in errors)

@@ -29,6 +29,7 @@ def build_llm_payload(engine: dict[str, Any], profile: Profile, language: str | 
             "display_name": profile.display_name,
             "sun_sign": natal["bodies"]["sun"]["sign"],
             "birth_time_known": natal["birth_time_known"],
+            "grammatical_gender": profile.grammatical_gender,
         },
         "day": {
             "moon_sign": day["moon_sign"],

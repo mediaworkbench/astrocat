@@ -12,7 +12,7 @@ Rules:
 5. No astrology jargon: never mention aspects (trine, square, sextile, conjunction, opposition), houses, degrees, "natal" or "transit". Planet and sign names are fine; use them exactly as given in the brief.
 6. If you mention the day, use exactly the weekday given in the brief. Never mention any other weekday.
 7. Include exactly one light cat touch in the whole reading (a cat pun or a cat image), preferably in the headline or the advice. Never more than one. Make it different every day; never just tack on "meow" or a cat word as a tag, and never call the reader by a nickname (no "kitty", "my cat", "friend").
-8. Do not assume the reader's gender. Use wording that fits everyone; {gender_hint}
+8. Grammatical gender: {gender_hint}
 9. Never predict accidents, illness, death or disasters. Never give medical, financial or legal advice. Never tell the reader to start or end a relationship. Never guilt or shame the reader.
 10. Lengths: headline at most 60 characters{headline_case}; summary 2 to 3 short sentences; love, work, energy and mood 1 to 2 short sentences each; advice exactly 1 sentence.
 11. Every day is different: never reuse headlines, phrases or openings from the recent readings.

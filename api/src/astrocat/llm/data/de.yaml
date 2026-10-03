@@ -55,7 +55,10 @@ example:
 
 # Prompt hints (rules 3, 8, 10).
 avoid: ["Vertraue", "innerer Rhythmus", "lass dich leiten", "Leichtigkeit", "Gemüt", "Harmonie", "Wohlgefühl", "positive Energie"]
-gender_hint: "in German avoid gendered nouns for the reader (not \"Gewinnerin\" or \"Gewinner\"); rephrase with verbs instead."
+gender_hint:
+  neutral: "do not assume the reader's gender: avoid gendered nouns for the reader (not \"Gewinnerin\" or \"Gewinner\"); rephrase with verbs instead."
+  feminine: "the reader prefers feminine forms: when a noun refers to the reader, use the feminine form (\"Gewinnerin\", \"Heldin des Tages\"), never the masculine."
+  masculine: "the reader prefers masculine forms: when a noun refers to the reader, use the masculine form (\"Gewinner\", \"Held des Tages\"), never the feminine."
 headline_case: ""
 
 gendered: []

@@ -6,7 +6,7 @@ from difflib import SequenceMatcher
 from typing import Any
 
 from astrocat.engine.profile import LANGUAGES
-from astrocat.llm.language import pack
+from astrocat.llm.language import gendered_patterns, pack
 from astrocat.llm.prompt import RecentReading
 
 SECTIONS = ("love", "work", "energy", "mood")
@@ -119,6 +119,16 @@ def _patterns(reading: dict[str, Any], language: str, kind: str, label: str) -> 
     return [f"{label}: {', '.join(found)}"] if found else []
 
 
+def _gender(reading: dict[str, Any], language: str, gender: str) -> list[str]:
+    text = " ".join(texts(reading))
+    found = sorted({m.group(0) for rx in gendered_patterns(language, gender) for m in rx.finditer(text)})
+    if not found:
+        return []
+    if gender == "neutral":
+        return [f"assumes the reader's gender, rephrase without gendered adjectives: {', '.join(found)}"]
+    return [f"uses the wrong grammatical gender for the reader (they prefer {gender} forms): {', '.join(found)}"]
+
+
 def _language(reading: dict[str, Any], language: str) -> list[str]:
     words = _WORD.findall(" ".join(texts(reading)).lower())
     scores = {lang: sum(w in set(pack(lang)["stopwords"]) for w in words) for lang in LANGUAGES}
@@ -171,13 +181,15 @@ def _repetition(reading: dict[str, Any], recent: list[RecentReading]) -> list[st
     return errors
 
 
-def validate(reading: dict[str, Any], language: str, day: date, recent: list[RecentReading]) -> list[str]:
+def validate(
+    reading: dict[str, Any], language: str, day: date, recent: list[RecentReading], gender: str = "neutral"
+) -> list[str]:
     """All problems of an already repaired reading; empty list = valid."""
     return (
         _lengths(reading)
         + _patterns(reading, language, "jargon", "uses astrology jargon")
         + _patterns(reading, language, "forbidden", "touches a forbidden topic")
-        + _patterns(reading, language, "gendered", "assumes the reader's gender, rephrase without adjectives")
+        + _gender(reading, language, gender)
         + _language(reading, language)
         + _weekdays(reading, language, day)
         + _repetition(reading, recent)

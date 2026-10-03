@@ -56,9 +56,14 @@ example:
 
 # Prompt hints (rules 3, 8, 10).
 avoid: ["embrace", "let things unfold", "trust your instincts", "inner light", "positive energy", "settles over you", "navigate", "flow"]
-gender_hint: "English rarely needs gendered words, so just avoid gendered nouns for the reader."
+# By the reader's grammatical-gender setting (feminine / masculine / neutral).
+gender_hint:
+  neutral: "English rarely needs gendered words; never use gendered nouns for the reader."
+  feminine: "English rarely needs gendered words; if a noun refers to the reader, use a feminine or neutral one."
+  masculine: "English rarely needs gendered words; if a noun refers to the reader, use a masculine or neutral one."
 headline_case: ", in sentence case (capitalize only the first word and proper nouns such as weekdays, planets and signs)"
 
+# Gendered forms to reject; {forms} becomes the wrong endings for the reader's setting.
 gendered: []
 
 # Language check: common words of this language.

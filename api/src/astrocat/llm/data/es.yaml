@@ -55,11 +55,15 @@ example:
 
 # Prompt hints (rules 3, 8, 10).
 avoid: ["fluir", "conexión", "confía en tu intuición", "ligereza", "momento perfecto", "permítete", "energía positiva", "buenas vibraciones"]
-gender_hint: "in Spanish never use adjectives or participles that agree with the reader (not \"enfocada\" or \"enfocado\", not \"cómoda\" or \"cómodo\"); rephrase with verbs or nouns instead (\"te concentras\", \"te sientes a gusto\")."
+gender_hint:
+  neutral: "do not assume the reader's gender: never use adjectives or participles that agree with the reader (not \"enfocada\" or \"enfocado\", not \"cómoda\" or \"cómodo\"); rephrase with verbs or nouns instead (\"te concentras\", \"te sientes a gusto\")."
+  feminine: "the reader prefers feminine forms: when an adjective or participle refers to the reader, always use the feminine form (\"te sientes tranquila\", \"estás preparada\", \"contigo misma\"), never the masculine."
+  masculine: "the reader prefers masculine forms: when an adjective or participle refers to the reader, always use the masculine form (\"te sientes tranquilo\", \"estás preparado\", \"contigo mismo\"), never the feminine."
 headline_case: ", in sentence case"
 
-# Adjectives that would assume the reader's gender after verbs like "sentir" or "estar".
-gendered: ['\b(sientes|siente|sentir|sentirás|estás|estar|eres|notas|ves|quedas)\s+(?:\w+\s+){0,3}?(segur|valorad|abrumad|reflexiv|cómod|enfocad|conectad|satisfech|generos|content|preparad|motivad|agotad|cansad|inspirad|agradecid|orgullos|animad|relajad|centrad|apreciad|list|tranquil|ocupad)[ao]\b', '\bcontigo mism[ao]\b', '\bti mism[ao]\b']
+# Adjectives referring to the reader after verbs like "sentir" or "estar"; {forms} becomes the
+# wrong endings for the reader's setting (neutral: both, feminine: o, masculine: a).
+gendered: ['\b(sientes|siente|sentir|sentirás|estás|estar|eres|notas|ves|quedas)\s+(?:\w+\s+){0,3}?(segur|valorad|abrumad|reflexiv|cómod|enfocad|conectad|satisfech|generos|content|preparad|motivad|agotad|cansad|inspirad|agradecid|orgullos|animad|relajad|centrad|apreciad|list|tranquil|ocupad){forms}\b', '\bcontigo mism{forms}\b', '\bti mism{forms}\b']
 stopwords: [el, la, de, que, y, tu, te, es, en, un, una, hoy, para, con, los, las, lo, por, se, más]
 
 jargon: ['\btr[ií]gonos?\b', '\bsextil(es)?\b', '\bcuadraturas?\b', '\bconjunci[oó]n(es)?\b', '\bnatal(es)?\b', '\btr[aá]nsitos?\b', '\bascendente\b', '\borbes?\b', '\bretr[oó]grad[oa]s?\b', '\bcasa \d+\b', '\b\d+(ª|a)? casa\b']
