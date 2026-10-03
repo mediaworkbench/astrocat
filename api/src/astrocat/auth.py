@@ -1,6 +1,8 @@
 """Passwords, sessions and login rate limiting (concept §9)."""
 
 import hashlib
+import hmac
+import re
 import secrets
 import threading
 import time
@@ -32,8 +34,26 @@ def verify_password(password_hash: str, password: str) -> bool:
         return False
 
 
+USERNAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]{2,31}$")
+
+
 def normalize_username(username: str) -> str:
     return username.strip().lower()
+
+
+def valid_username(username: str) -> bool:
+    """3–32 characters: lowercase letters, digits, dot, underscore, hyphen; starts with a letter or digit."""
+    return bool(USERNAME_PATTERN.match(username))
+
+
+def registration_open() -> bool:
+    return bool(get_settings().registration_code)
+
+
+def invite_code_ok(code: str) -> bool:
+    expected = get_settings().registration_code
+    # Constant-time comparison, so response times don't leak the code.
+    return bool(expected) and hmac.compare_digest(code.strip().encode(), expected.encode())
 
 
 def authenticate(db: Session, username: str, password: str) -> User | None:

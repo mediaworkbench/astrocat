@@ -121,6 +121,9 @@ export const api = {
   me: () => request<Me>("GET", "/api/me"),
   login: (username: string, password: string) => request<Me>("POST", "/api/auth/login", { username, password }),
   logout: () => request<void>("POST", "/api/auth/logout"),
+  registration: () => request<{ enabled: boolean }>("GET", "/api/auth/registration"),
+  register: (body: { username: string; password: string; invite_code: string; language: Language; timezone: string }) =>
+    request<Me>("POST", "/api/auth/register", body),
   updateSettings: (changes: Partial<Pick<Me, "display_name" | "language" | "grammatical_gender" | "timezone">>) =>
     request<Me>("PUT", "/api/me/settings", changes),
   updateBirth: (birth: BirthUpdate) => request<Me>("PUT", "/api/me/birth", birth),

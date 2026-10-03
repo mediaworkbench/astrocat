@@ -32,7 +32,7 @@
 #### Non-goals for the MVP
 
 - Push notifications, offline mode, HTTPS
-- Public sign-up or hosting outside the home network
+- Open sign-up or hosting outside the home network (self-registration needs an invite code, §9)
 - Compatibility between users, weekly/monthly horoscopes, share cards
 - Native apps
 
@@ -57,7 +57,8 @@
 
 | Screen | Content |
 |---|---|
-| Login | Username + password. No sign-up link (invite-only). |
+| Login | Username + password. "Create account" link only when an invite code is configured. |
+| Create account | Username, password, invite code; language and timezone from the browser. Logs in and continues with onboarding. |
 | Onboarding | Display name, language, how Mira should address you (feminine / masculine / neutral forms; matters for Spanish and German), birth date, birth time (optional, "I don't know" checkbox), birth place (city search), current timezone (prefilled from the browser). |
 | Today | Mira in today's pose · headline · short summary · category cards with paw ratings · Mira's advice · expandable "Why Mira says this". |
 | Settings | Language, form of address, birth data, timezone, change password, logout, "Source code" link (§12). |
@@ -347,7 +348,10 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 ## 9. Users and authentication
 
-- **Invite-only:** no public sign-up. Accounts are created with an admin command, e.g. `docker compose exec api astrocat create-user <username>`.
+- **Invite-only:** accounts come either from self-registration in the app with an **invite code**, or from the admin command `docker compose exec api astrocat create-user <username>`.
+  - The code is `REGISTRATION_CODE` in `.env`; empty = registration off (the app hides the link). Change it to stop further sign-ups; existing accounts are not affected.
+  - The code is compared in constant time; wrong codes share the login rate limit (5 per 15 minutes, then `429`).
+  - Usernames: 3–32 characters, lowercase letters, digits, dot, underscore, hyphen (same rule for the CLI).
 - Username + password; passwords hashed with **argon2**.
 - Server-side sessions in Postgres, sent as an `HttpOnly`, `SameSite=Lax` cookie. Only a SHA-256 of the random token is stored. Sessions last 90 days and slide: with less than half the time left, any request renews them, so phones in daily use stay logged in.
 - Users can change their own password in Settings (this logs out their other devices); a forgotten password is reset with `astrocat reset-password <username>`.
@@ -389,12 +393,14 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 ### 10.1 API
 
-All routes live under `/api` (OpenAPI docs at `/api/docs`). Everything except `health` and `auth/login` requires a session.
+All routes live under `/api` (OpenAPI docs at `/api/docs`). Everything except `health`, `auth/login` and the two registration routes requires a session.
 
 | Route | Purpose |
 |---|---|
 | `GET /api/health` | Liveness and database check |
 | `POST /api/auth/login`, `POST /api/auth/logout` | Session cookie |
+| `GET /api/auth/registration` | Whether "Create account" is offered |
+| `POST /api/auth/register` | Create an account with the invite code; logs in (`403` wrong code, `404` registration off, `409` username taken) |
 | `GET /api/me` | Profile, settings, birth data, `onboarding_complete` |
 | `PUT /api/me/settings` | Display name, language, form of address, current timezone |
 | `PUT /api/me/birth` | Birth date, optional time, place (`place_id` from the search, or a manual place), optional UTC offset override |

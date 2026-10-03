@@ -38,6 +38,13 @@ Goal (see [concept.md](concept.md) §2, §3): Mira from the new character art (`
 
 ---
 
+## Self-registration with invite code (2026-10-03)
+
+- Decided: registration in the app, protected by an invite code (`REGISTRATION_CODE` in `.env`; empty = off). Alternatives considered: open registration (any guest on the Wi-Fi could sign up and use the Mac's Ollama), open with an on/off switch.
+- API: `GET /api/auth/registration`, `POST /api/auth/register` (constant-time code check, wrong codes rate-limited like logins, username rule shared with the CLI, logs in right away). 5 new tests (147 in total).
+- App: "Create account" link on the login screen only when enabled; registration screen in EN/ES/DE; afterwards onboarding with the name prefilled. Checked in WebKit/iPhone: link, wrong code message, successful registration → onboarding.
+- Local `.env` got a random code (`mira-…`); `.env.example` leaves it empty.
+
 ## M5 log
 
 - **Art:** `mira-character.png` (1376 × 768, transparent) contains one pose; the cat itself is about 504 × 490 px. Cut to the cat; the English card text ("HOROSCOPE / TODAY'S GUIDANCE") removed with OpenCV inpainting (only the dark text pixels, not the thumb), so the card is language-neutral. Exported as WebP with alpha (39 KB). New app icons: Mira's head on the app's night-sky gradient, with the raised paw faded out at the edge.

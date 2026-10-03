@@ -72,13 +72,15 @@ def _ask_password() -> str:
 @click.option("--language", type=click.Choice(LANGUAGES), default="en", show_default=True)
 @click.option("--timezone", "tz", default="Europe/Berlin", show_default=True, help="Current IANA timezone.")
 def create_user(username: str, display_name: str | None, language: str, tz: str) -> None:
-    """Create a user (invite-only: there is no public sign-up)."""
+    """Create a user (alternative to self-registration with the invite code)."""
     from sqlalchemy import select
 
-    from astrocat.auth import hash_password, normalize_username
+    from astrocat.auth import hash_password, normalize_username, valid_username
     from astrocat.db import User, session_factory
 
     name = normalize_username(username)
+    if not valid_username(name):
+        raise click.ClickException("username: 3-32 characters, letters, digits, dot, underscore or hyphen")
     with session_factory()() as db:
         if db.scalar(select(User).where(User.username == name)):
             raise click.ClickException(f"user {name!r} already exists")

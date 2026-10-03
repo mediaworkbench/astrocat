@@ -27,6 +27,8 @@ class Settings:
     stale_generation_minutes: int
     # How long a request waits for a reading another request is generating.
     wait_for_generation_seconds: int
+    # Invite code for self-registration in the app; empty = registration off (accounts only via the CLI).
+    registration_code: str
 
 
 def load_env_file() -> None:
@@ -66,4 +68,5 @@ def get_settings() -> Settings:
         login_window_minutes=int(os.environ.get("LOGIN_WINDOW_MINUTES", "15")),
         stale_generation_minutes=int(os.environ.get("STALE_GENERATION_MINUTES", "5")),
         wait_for_generation_seconds=int(os.environ.get("WAIT_FOR_GENERATION_SECONDS", "90")),
+        registration_code=os.environ.get("REGISTRATION_CODE", "").strip(),
     )

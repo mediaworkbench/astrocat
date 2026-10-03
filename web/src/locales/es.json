@@ -17,7 +17,26 @@
     "submit": "Entrar",
     "submitting": "Entrando…",
     "wrong": "El usuario o la contraseña no son correctos.",
-    "tooMany": "Demasiados intentos. Espera {{minutes}} min y vuelve a intentarlo."
+    "tooMany": "Demasiados intentos. Espera {{minutes}} min y vuelve a intentarlo.",
+    "noAccount": "¿Primera vez aquí?",
+    "createAccount": "Crear una cuenta"
+  },
+  "register": {
+    "title": "Crea tu cuenta",
+    "intro": "Necesitas un código de invitación de la persona que gestiona AstroCat.",
+    "username": "Usuario",
+    "usernameHint": "De 3 a 32 caracteres: letras, números, punto, guion bajo o guion.",
+    "password": "Contraseña",
+    "passwordHint": "Mínimo 8 caracteres.",
+    "inviteCode": "Código de invitación",
+    "submit": "Crear cuenta",
+    "submitting": "Creando…",
+    "haveAccount": "¿Ya tienes cuenta? Entra",
+    "wrongCode": "Este código de invitación no funciona.",
+    "taken": "Ese nombre de usuario ya está ocupado.",
+    "invalidUsername": "Usa de 3 a 32 letras, números, puntos, guiones bajos o guiones.",
+    "tooMany": "Demasiados códigos incorrectos. Espera {{minutes}} min y vuelve a intentarlo.",
+    "closed": "El registro está cerrado en este momento."
   },
   "onboarding": {
     "step": "Paso {{current}} de {{total}}",

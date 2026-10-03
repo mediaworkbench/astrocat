@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ApiError, api, type Me } from "../api";
 import { Field, Mira } from "../components";
 
-export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
+export function Login({ onLogin, onRegister }: { onLogin: (me: Me) => void; onRegister?: () => void }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -68,6 +68,14 @@ export function Login({ onLogin }: { onLogin: (me: Me) => void }) {
           {busy ? t("login.submitting") : t("login.submit")}
         </button>
       </form>
+      {onRegister && (
+        <p className="muted" style={{ textAlign: "center" }}>
+          {t("login.noAccount")}{" "}
+          <button type="button" className="button ghost" onClick={onRegister}>
+            {t("login.createAccount")}
+          </button>
+        </p>
+      )}
     </main>
   );
 }

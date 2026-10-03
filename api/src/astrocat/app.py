@@ -9,7 +9,7 @@ from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Cookie, Depends, FastAPI, HTTPException, Query, Request, Response, status
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from astrocat import auth
@@ -46,6 +46,26 @@ def _check_timezone(value: str) -> str:
 class LoginRequest(BaseModel):
     username: str = Field(min_length=1, max_length=64)
     password: str = Field(min_length=1, max_length=256)
+
+
+class RegisterRequest(BaseModel):
+    username: str = Field(min_length=1, max_length=64)
+    password: str = Field(min_length=auth.MIN_PASSWORD_LENGTH, max_length=256)
+    invite_code: str = Field(min_length=1, max_length=200)
+    language: str = "en"
+    timezone: str = "UTC"
+
+    @field_validator("language")
+    @classmethod
+    def _language(cls, v: str) -> str:
+        if v not in LANGUAGES:
+            raise ValueError(f"language must be one of {LANGUAGES}")
+        return v
+
+    @field_validator("timezone")
+    @classmethod
+    def _timezone(cls, v: str) -> str:
+        return _check_timezone(v)
 
 
 class SettingsUpdate(BaseModel):
@@ -213,6 +233,50 @@ def login(body: LoginRequest, db: DB, response: Response) -> dict[str, Any]:
         auth.login_limiter.failed(key)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "wrong username or password")
     auth.login_limiter.succeeded(key)
+    _set_cookie(response, auth.create_session(db, user))
+    return _me(user)
+
+
+@router.get("/auth/registration")
+def registration() -> dict[str, bool]:
+    """Whether the app should offer "Create account" (an invite code is configured)."""
+    return {"enabled": auth.registration_open()}
+
+
+# Wrong invite codes count against one shared budget (the app sits behind one proxy at home).
+REGISTER_LIMIT_KEY = "register"
+
+
+@router.post("/auth/register", status_code=status.HTTP_201_CREATED)
+def register(body: RegisterRequest, db: DB, response: Response) -> dict[str, Any]:
+    if not auth.registration_open():
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "registration is not enabled")
+    wait = auth.login_limiter.retry_after(REGISTER_LIMIT_KEY)
+    if wait:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            "too many wrong invite codes, try again later",
+            {"Retry-After": str(wait)},
+        )
+    if not auth.invite_code_ok(body.invite_code):
+        auth.login_limiter.failed(REGISTER_LIMIT_KEY)
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "wrong invite code")
+    username = auth.normalize_username(body.username)
+    if not auth.valid_username(username):
+        raise HTTPException(422, "username: 3-32 characters, letters, digits, dot, underscore or hyphen")
+    if db.scalar(select(User).where(User.username == username)):
+        raise HTTPException(status.HTTP_409_CONFLICT, "username is taken")
+    user = User(
+        username=username,
+        password_hash=auth.hash_password(body.password),
+        display_name=body.username.strip(),
+        language=body.language,
+        grammatical_gender="neutral",
+        timezone=body.timezone,
+    )
+    db.add(user)
+    db.commit()
+    log.info("user %r registered via invite code", username)
     _set_cookie(response, auth.create_session(db, user))
     return _me(user)
 

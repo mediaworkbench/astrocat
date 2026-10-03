@@ -6,6 +6,7 @@ import { PoseGallery } from "./mira";
 import { setLanguage } from "./i18n";
 import { Login } from "./screens/Login";
 import { Onboarding } from "./screens/Onboarding";
+import { Register } from "./screens/Register";
 import { Settings } from "./screens/Settings";
 import { Today } from "./screens/Today";
 
@@ -18,10 +19,17 @@ function currentRoute(): Route {
 export function App() {
   const [me, setMe] = useState<Me | null | undefined>(undefined); // undefined = still checking the session
   const [route, setRoute] = useState<Route>(currentRoute);
+  const [registrationOpen, setRegistrationOpen] = useState(false);
+  const [registering, setRegistering] = useState(false);
 
   useEffect(() => {
     // Not logged in (401) or server unreachable: the login screen explains the rest.
     api.me().then(setMe).catch(() => setMe(null));
+    // "Create account" is only offered when an invite code is configured on the server.
+    api
+      .registration()
+      .then((r) => setRegistrationOpen(r.enabled))
+      .catch(() => setRegistrationOpen(false));
     const onHash = () => setRoute(currentRoute());
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
@@ -43,7 +51,17 @@ export function App() {
 
   if (import.meta.env.DEV && window.location.hash === "#/poses") return <PoseGallery />;
   if (me === undefined) return <div className="page"><MiraLoading /></div>;
-  if (me === null) return <Login onLogin={setMe} />;
+  if (me === null) {
+    if (registering && registrationOpen) {
+      return (
+        <Register
+          onRegistered={(created) => { setRegistering(false); setMe(created); }}
+          onLogin={() => setRegistering(false)}
+        />
+      );
+    }
+    return <Login onLogin={setMe} onRegister={registrationOpen ? () => setRegistering(true) : undefined} />;
+  }
   if (!me.onboarding_complete) {
     return <Onboarding me={me} onDone={(updated) => { setMe(updated); navigate("today"); }} onUnauthorized={loggedOut} />;
   }

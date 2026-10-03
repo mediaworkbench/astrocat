@@ -17,7 +17,26 @@
     "submit": "Anmelden",
     "submitting": "Anmelden …",
     "wrong": "Benutzername oder Passwort ist falsch.",
-    "tooMany": "Zu viele Versuche. Bitte warte {{minutes}} Min. und versuch es dann nochmal."
+    "tooMany": "Zu viele Versuche. Bitte warte {{minutes}} Min. und versuch es dann nochmal.",
+    "noAccount": "Neu hier?",
+    "createAccount": "Konto erstellen"
+  },
+  "register": {
+    "title": "Konto erstellen",
+    "intro": "Du brauchst einen Einladungscode von der Person, die AstroCat betreibt.",
+    "username": "Benutzername",
+    "usernameHint": "3–32 Zeichen: Buchstaben, Ziffern, Punkt, Unterstrich oder Bindestrich.",
+    "password": "Passwort",
+    "passwordHint": "Mindestens 8 Zeichen.",
+    "inviteCode": "Einladungscode",
+    "submit": "Konto erstellen",
+    "submitting": "Wird erstellt …",
+    "haveAccount": "Schon ein Konto? Anmelden",
+    "wrongCode": "Dieser Einladungscode passt nicht.",
+    "taken": "Dieser Benutzername ist schon vergeben.",
+    "invalidUsername": "Bitte 3–32 Buchstaben, Ziffern, Punkte, Unterstriche oder Bindestriche verwenden.",
+    "tooMany": "Zu viele falsche Codes. Bitte warte {{minutes}} Min. und versuch es dann nochmal.",
+    "closed": "Die Registrierung ist gerade geschlossen."
   },
   "onboarding": {
     "step": "Schritt {{current}} von {{total}}",
