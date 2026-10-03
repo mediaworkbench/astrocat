@@ -1,0 +1,9 @@
+# Development overlay: publishes db and api on localhost only, for the CLI, tests and curl.
+# In normal operation only the web service (M4) is reachable from the home network.
+services:
+  db:
+    ports:
+      - "127.0.0.1:55432:5432"
+  api:
+    ports:
+      - "127.0.0.1:8000:8000"

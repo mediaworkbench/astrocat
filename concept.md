@@ -1,6 +1,6 @@
 # AstroCat — Concept
 
-> Status: MVP concept, v2 (2026-10-03)
+> Status: MVP concept, v4 (2026-10-03) — M1 (engine), M2 (LLM) and M3 (API, database, login, scheduler) are built; this version includes what we learned there. Progress and tuning logs: [TASKS.md](TASKS.md).
 
 **AstroCat** is a mobile-first daily horoscope PWA. Mira, a charming cat guide, presents each user's personal daily reading, calculated from their own birth chart and today's planetary transits. A deterministic astrology engine decides *what* the day looks like; a local LLM only decides *how to say it* — in Mira's voice, in English, Spanish, or German.
 
@@ -78,8 +78,11 @@
 
 #### Voice rules
 
-- Short sentences. Concrete, everyday suggestions.
-- At most one cat pun or cat reference per reading.
+- Writes like a clever friend with a sense of humor, **not like a wellness app**.
+- Short sentences. **Every section contains one concrete, everyday suggestion** (send a short message, take a walk, tidy one drawer, cook something warm, go to bed early).
+- **Exactly one light cat touch per reading** (a pun or a cat image, preferably in the headline or the advice), different every day. Never a tagged-on "meow", never a nickname for the reader ("kitty", "my cat", "friend").
+- Avoids overused phrases; each language has its own list (e.g. "embrace", "let things unfold", "Vertraue", "innerer Rhythmus", "fluir", "permítete").
+- Addresses only the reader, in the singular (Spanish: never *vosotros*).
 - Difficult days are framed as "be gentle / take your time", never as doom.
 - **No jargon in the prose.** Planet and sign names are fine ("the Moon", "Venus", "Pisces"); aspect names, houses, orbs and terms like "natal" or "transit" are not. Technical detail lives only in the "Why Mira says this" section.
 - **Refer to the day by its weekday** ("this Saturday"), using the date label from the payload — never work it out from the date.
@@ -141,14 +144,16 @@ The engine is pure Python, deterministic, and has no knowledge of the LLM. Given
 | House system | Whole Sign (simple, robust at all latitudes) |
 | Bodies | Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto; Ascendant only if birth time is known |
 | Aspects | conjunction, sextile, square, trine, opposition |
-| Transit orbs (starting values) | Moon 3°, Sun/Mercury/Venus/Mars 2°, Jupiter/Saturn 1.5°, Uranus/Neptune/Pluto 1° |
-| Ephemeris | `libephemeris` |
+| Transit orbs | Sun/Mercury/Venus/Mars 2°, Jupiter/Saturn 1.5°, Uranus/Neptune/Pluto 1°. The Moon has no orb: its aspects count when they become exact during the local day (§5.3). |
+| Ephemeris | `libephemeris`, network access disabled ("sealed"): no downloads at runtime |
+
+All values live in `api/src/astrocat/engine/data/settings.yaml`. Any change there (or in `keywords.yaml`) changes the engine version fingerprint, so cached readings are regenerated automatically.
 
 ### 5.2 Inputs
 
 - **Birth date and local clock time.** Converted to UTC with `zoneinfo` using the historical timezone of the birth place. An optional manual UTC offset override covers cases where historical tz data is wrong (mostly births before ~1970 in some regions).
 - **Birth time unknown → noon fallback.** The chart is cast for 12:00 local time, there is no Ascendant, and houses fall back to **solar houses** (Whole Sign counted from the Sun sign). Aspects to the natal Moon get a lower weight, since its position is uncertain by up to ~7°.
-- **Birth place.** Offline city search using the GeoNames `cities1000` dataset (`cities15000` would miss many small birth towns), matching alternate names too (Munich / München / Múnich) → latitude/longitude; `timezonefinder` → IANA timezone. No external geocoding API (privacy, offline-friendly). GeoNames is CC BY 4.0 → attribution required.
+- **Birth place.** Offline city search using the GeoNames `cities1000` dataset (`cities15000` would miss many small birth towns), matching alternate names too (Munich / München / Múnich), accent-insensitive, biggest city first. GeoNames already contains each city's IANA timezone, so no extra library is needed. The list is downloaded once by an admin command (`astrocat places import`); at runtime there is no external API (privacy, offline-friendly). Places missing from the list can be entered manually (name, coordinates, timezone). GeoNames is CC BY 4.0 → attribution required.
 - **Today.** The transit chart is computed for **local noon of the target date** in the user's *current* timezone.
 
 ### 5.3 Daily computation
@@ -157,7 +162,7 @@ The engine is pure Python, deterministic, and has no knowledge of the LLM. Given
 2. **Transit chart** for the target date (local noon).
 3. **Factors:** all transit-to-natal aspects within orb, plus the natal house each transiting planet is in, plus the Moon's sign and phase.
    - **Moon exception:** the Moon moves ~13° per day, so a noon snapshot misses many of its aspects. Moon aspects count if they become exact at any time during the local day (00:00–24:00).
-4. **Weighting:** `weight = planet weight × aspect strength × orb tightness`.
+4. **Weighting:** `weight = transit-planet weight × natal-point weight × aspect strength × orb tightness`. Placements ("Venus in your 5th house") count for the fast planets (Sun–Mars, Moon) with a low weight.
    - The Moon gets a high weight — it moves ~13°/day and provides the day-to-day variety.
    - Slow planets (Jupiter–Pluto) are capped to **one background theme**, otherwise the same transit would dominate for weeks.
 5. **Categories:** each aspect contributes to one or more categories via its planets and houses; a placement ("Venus in your 5th house") only via its house, otherwise e.g. Venus would push every love score up every day (starting mapping, to be tuned):
@@ -169,7 +174,7 @@ The engine is pure Python, deterministic, and has no knowledge of the LLM. Given
    | Energy | Mars, Sun | 1, 6 |
    | Mood | Moon, Neptune | 4, 12 |
 
-   Harmonious aspects (trine, sextile) raise a score, tense ones (square, opposition) lower it, and conjunctions follow the planet's nature. The background theme counts half. Each category is normalized to **1–5 paws** (smooth curve, tuned so that 1 and 5 paws are rare, ~7% each); the overall day score (→ Mira's pose) is the weighted average, rounded.
+   Harmonious aspects (trine, sextile) raise a score, tense ones (square, opposition) lower it, and conjunctions follow the planet's nature. The background theme counts half. Each category is normalized to **1–5 paws** with a smooth curve, `3 + 2·tanh((raw − 0.1) / 1.0)`, calibrated in M1 on 40 random charts: 1–5 paws ≈ 7 / 25 / 33 / 26 / 7 %. The 0.1 offsets a small built-in positive bias (more aspect types count as harmonious than as tense). The overall day score (→ Mira's pose) is the average of the four categories, rounded half up.
 6. **Selection:** the top 3–5 factors are passed on, always including at least one Moon factor. If the Moon makes no aspect that day, the Moon's natal house serves as the Moon factor (it always exists).
 7. **Empty categories:** a category without any factor gets a neutral score of 3 and keywords from the Moon's sign and house.
 
@@ -180,8 +185,9 @@ Instead of writing a text for every planet × aspect × planet × category combi
 - per aspect nature (harmonious → ease, flow; tense → friction, growth through effort)
 - per house (5 → romance, play, creativity)
 - per sign (for the Moon's daily sign)
+- per category and score band (low / mid / high), 7–8 entries each, so consecutive days rarely get the same hints (M2: with 3–4 entries the LLM echoed the same phrases every day)
 
-The engine selects keywords; the LLM combines them into prose. The tables live as versioned YAML files in the repo, in English, and are written by us (no copying from books or websites — important for the open-source release).
+Keywords are chosen with a random generator seeded by user and date, so the output stays deterministic. The engine selects keywords; the LLM combines them into prose. The tables live as versioned YAML files in the repo, in English, and are written by us (no copying from books or websites — important for the open-source release).
 
 ---
 
@@ -190,25 +196,33 @@ The engine selects keywords; the LLM combines them into prose. The tables live a
 - **Runtime:** Ollama on the macOS host (outside Docker), reached from containers at `http://host.docker.internal:11434`.
 - **Model:** `gemma4:e4b` (chosen in M2: `e2b` is fine for English but too weak in Spanish and German; `e4b` takes ~8 s per reading); base URL and model name are configurable via `.env`.
 - **Role:** turns the engine JSON into prose. It never sees raw positions or degrees, and it never decides ratings or poses.
+- **Thinking mode off:** `think: true` roughly triples the tokens without better readings (M2 probe).
+- **Language packs:** one YAML file per language (`api/src/astrocat/llm/data/{en,es,de}.yaml`) with localized planet/sign/phase/weekday/month names, the style example, the cliché list, gender hints, check patterns, and the fallback texts. The system prompt is `system_prompt.txt`. Any change to these files changes the prompt version.
 
 #### Prompt structure
 
-- System prompt: Mira's persona and voice rules (§3), content rules, output length limits.
-- Language block: target language, register (*du* / *tú*), **glossary** of planet and sign names for that language, 1–2 example readings in that language.
-- User message: the LLM payload (§7.1).
-- **Recent readings block:** the headlines and advice of the user's last 3 readings in the same language, with the instruction not to reuse their phrases or openings. Small models repeat themselves easily; this keeps day-to-day readings feeling fresh. (This comes from the database, not from the engine, so the engine stays deterministic.)
+- **System prompt:** Mira's persona and voice rules (§3), content rules, length limits, the target language and register (*du* / *tú*, singular), the cliché list and the gender hint for the user's setting, plus one full style example in that language ("copy the style, never the sentences").
+- **User message — a short brief, not raw JSON:** the LLM payload (§7.1) rendered as a few lines of text. Planet, sign, Moon-phase and weekday names are **already localized**, so the model never translates astrology terms itself; keywords stay in English as hints. The user's **name is left out**: in M2 the model guessed a gender from "Lucía".
+- **Recent readings block:** the headlines, advice and summary openings of the user's last 3 readings in the same language, with the instruction not to reuse them. Small models repeat themselves easily. (This comes from the database, not from the engine, so the engine stays deterministic.)
 
 #### Output control
 
 - Structured output via Ollama's `format` parameter with the JSON schema from §7.2.
-- Moderate temperature (start at ~0.7) for variety without drift.
-- **Validation:** schema, length limits, a forbidden-topics check, a basic language check, a **jargon check** (per-language list of unambiguous terms, e.g. trine / trígono / Trigon), and a **repetition check** (headline must not match one of the last 3).
-- **Retries:** up to 2; then fall back to a **template reading**: prewritten sentences per category × score × language (4 × 5 × 3 = 60 short sentences). The keyword tables are English-only, so they can't be used for ES/DE fallback text directly.
-- Every stored reading records model name, prompt version, and engine version.
+- **Repair before validation:** surplus sentences are trimmed instead of rejecting the reading (the sentence splitter ignores dates like "3. Oktober" and abbreviations like "z.B.").
+- **Validation:**
+  - schema and length limits
+  - forbidden topics and astrology jargon (per-language patterns, e.g. trine / trígono / Trigon, "5. Haus")
+  - language check (the reading must be in the requested language)
+  - wrong weekday (any weekday other than today's)
+  - grammatical gender: rejects forms that don't match the user's setting (§3)
+  - repetition against the last 3 readings: similar headline or advice, same summary opening, or a headline that starts or ends with the same word (catches formulas like "…, ¡miau!" or "Widder-Mittwoch:")
+- **Retries:** up to 2, with the rejection reasons fed back to the model and a **rising temperature** (0.7 → 0.85 → 1.0); at the same temperature the model tends to repeat a rejected phrase.
+- **Fallback:** after 3 failed attempts, or immediately if Ollama is unreachable, a **template reading** from the language pack: sentences per category × score (60 per language) plus headline, summary and advice per overall score. The keyword tables are English-only, so they can't be used for Spanish or German fallback text.
+- Every stored reading records status, attempts, rejection reasons, model, prompt version, engine version and duration.
 
 #### Glossary example
 
-The full glossary is used for the i18n templates of the "Why" section. The LLM only gets the planet and sign names, since it must not use the rest (§3).
+Planet, sign and phase names come from the language packs and are used both in the brief and later in the "Why" section. The aspect and house terms below are only for the "Why" i18n templates (M4); the LLM must not use them (§3).
 
 | EN | ES | DE |
 |---|---|---|
@@ -220,14 +234,17 @@ The full glossary is used for the i18n templates of the "Why" section. The LLM o
 
 #### Review tool
 
-A CLI command renders a series of days as one HTML page for tuning and quality checks, e.g. `astrocat review --profile demo/anna.yaml --from 2026-10-01 --days 14 --lang de`. It reads birth data from a YAML file because the database only arrives in M3 (`--user <username>` can be added then). Days are generated in order, so the recent-readings block (above) is exercised too:
+A CLI command renders a series of days as one HTML page for tuning and quality checks, e.g. `astrocat review --profile demo/anna.yaml --from 2026-10-01 --days 14 [--lang de] [--model gemma4:e2b]`. It reads birth data from a YAML file because the database only arrives in M3 (`--user <username>` can be added then). Days are generated in order, so the recent-readings block (above) is exercised too:
 
 - one row per day: paw ratings, Mira's pose, top factors (engine) next to the generated reading (LLM)
-- flags: validation failures, fallback readings, repeated phrases across days
+- flags: rejected attempts with reasons, fallback readings, repeated summary openings across days
+- LLM summary: valid/fallback counts, first-attempt rate, median and max duration
 - summary: distribution of scores and poses over the period (are the paws actually varied, or stuck at 3?)
 - `--engine-only` skips the LLM for fast tuning of weights and orbs
 
-**Risk:** a 2B model is weakest outside English. Spanish and German quality is tested early (milestone M2). If one language is not good enough, options are: a larger local model for that language only, or generating in English and translating in a second LLM call.
+#### M2 outcome
+
+Four prompt rounds, each reviewed on 3 profiles × 14 days. Final round with `gemma4:e4b`: 42/42 valid, no fallbacks, median 6.5–8.5 s, concrete and varied readings in all three languages. `gemma4:e2b` was fine in English but made too many mistakes in Spanish and German. Known weaknesses: favorite images repeat across days ("flotter Spaziergang"), and German has occasional small grammar slips. Details per round: [TASKS.md](TASKS.md).
 
 ---
 
@@ -307,16 +324,16 @@ The engine produces a full output (positions, degrees, orbs, all factors), which
 }
 ```
 
-Scores, Mira's pose, and the "Why" list come from the engine output, not from the LLM. `house` is the natal house the transiting planet is in. The overall score 4 is the rounded average of the category scores (3.75). `weekday` and `date_label` are added by the API (localized, e.g. with Babel), because small models often get the weekday of a date wrong; the engine itself stays language-independent.
+Scores, Mira's pose, and the "Why" list come from the engine output, not from the LLM. `house` is the natal house the transiting planet is in. The overall score 4 is the rounded average of the category scores (3.75). `weekday` and `date_label` are added by the API (localized with the tables in the language packs, no extra dependency), because small models often get the weekday of a date wrong; the engine itself stays language-independent. `display_name` stays in the payload for the app, but is not passed on to the model (§6).
 
 ---
 
 ## 8. Generation and caching
 
 - **Cache key:** `(user_id, local_date, language, input_hash)`, where `input_hash` hashes the birth profile, the form of address, and `engine_version`. Editing birth data or the form of address therefore produces a new reading automatically, without separate invalidation logic. Each reading also stores `engine_version`, `prompt_version`, and the model name.
-- **Scheduled job:** shortly after midnight (in each user's timezone), generate that day's reading. With 3 users this is 3 LLM calls per day.
-- **On demand:** if a reading is missing (e.g. the Mac was asleep), it is generated when the user opens the app; Mira's loading animation covers the wait (expected: a few seconds).
-- **No duplicates:** a unique constraint on the cache key plus a `generating` status. If two requests arrive at once, the second one waits for the first instead of starting another LLM call.
+- **Scheduled job as a catch-up loop:** every 15 minutes, the job generates today's reading for every user whose local day has started (from 00:05 local time) and who has none yet. The same code handles each user's timezone and a Mac that slept through the night. With 3 users this is 3 LLM calls per day. Only one reading is generated at a time, since Ollama runs one model.
+- **On demand:** if a reading is missing (e.g. the Mac was asleep), it is generated when the user opens the app; Mira's loading animation covers the wait (with `gemma4:e4b` typically ~8 s, up to ~20 s when retries are needed; plus a few seconds if Ollama first has to load the model).
+- **No duplicates:** a unique constraint on the cache key plus a `generating` status. If two requests arrive at once, the second one waits for the first instead of starting another LLM call (up to 90 s, then `503` with `Retry-After`, and the app retries). A failed generation is retried by the next request; a `generating` row abandoned by a crash is taken over after 5 minutes.
 - **History:** past readings stay in the database (enables a history view later at no extra cost).
 
 ---
@@ -325,9 +342,9 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 - **Invite-only:** no public sign-up. Accounts are created with an admin command, e.g. `docker compose exec api astrocat create-user <username>`.
 - Username + password; passwords hashed with **argon2**.
-- Server-side sessions in Postgres, sent as an `HttpOnly`, `SameSite=Lax` cookie, long-lived (~90 days) so phones stay logged in.
-- Users can change their own password in Settings; a forgotten password is reset with `astrocat reset-password <username>`.
-- Basic login rate limiting.
+- Server-side sessions in Postgres, sent as an `HttpOnly`, `SameSite=Lax` cookie. Only a SHA-256 of the random token is stored. Sessions last 90 days and slide: with less than half the time left, any request renews them, so phones in daily use stay logged in.
+- Users can change their own password in Settings (this logs out their other devices); a forgotten password is reset with `astrocat reset-password <username>`.
+- Login rate limiting: 5 failed attempts per username within 15 minutes, then `429` with `Retry-After` (in memory; resets when the api restarts).
 - **iOS:** a home-screen app has its own cookie storage, separate from Safari. Users log in once *inside* the installed app.
 - Because the MVP runs on plain HTTP in the home network, the cookie cannot use the `Secure` flag. This is acceptable on a trusted home Wi-Fi and is documented; it changes once HTTPS is added.
 
@@ -347,7 +364,7 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
  └────────┬──────────────────────────────────────────────────┘
           │ host.docker.internal:11434
           ▼
-   Ollama on macOS (gemma4:e2b)
+   Ollama on macOS (gemma4:e4b)
 ```
 
 | Service | Contents |
@@ -361,13 +378,32 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 **Dropped from v1:** separate `ephemeris` service (it's a library inside `api`), Redis (Postgres + in-process scheduler are enough at this scale).
 
-### 10.1 Home network setup
+**Files:** `compose.yaml` (production: `db`, `api`; `web` follows in M4), `compose.dev.yaml` (adds ports on 127.0.0.1 for development and tests: db 55432, api 8000), `.env` (from `.env.example`; database password, Ollama model, session and scheduler settings). The `api` container runs `astrocat migrate` on every start, then `astrocat serve`.
+
+### 10.1 API
+
+All routes live under `/api` (OpenAPI docs at `/api/docs`). Everything except `health` and `auth/login` requires a session.
+
+| Route | Purpose |
+|---|---|
+| `GET /api/health` | Liveness and database check |
+| `POST /api/auth/login`, `POST /api/auth/logout` | Session cookie |
+| `GET /api/me` | Profile, settings, birth data, `onboarding_complete` |
+| `PUT /api/me/settings` | Display name, language, form of address, current timezone |
+| `PUT /api/me/birth` | Birth date, optional time, place (`place_id` from the search, or a manual place), optional UTC offset override |
+| `POST /api/me/password` | Change password |
+| `GET /api/places?q=` | City search (onboarding) |
+| `GET /api/today` | Today's reading: texts, paw ratings, pose, Moon, factors for "Why Mira says this"; `409` without birth data, `503` while another request generates it |
+
+Admin commands run inside the container, e.g. `docker compose exec api astrocat create-user anna`: `create-user`, `reset-password`, `places import`, `migrate`.
+
+### 10.2 Home network setup
 
 - Give the Mac a **fixed LAN IP** (DHCP reservation in the router).
 - Expose only `web` on port 80 (or 8080) to the LAN; allow it in the macOS firewall. `api` and `db` publish no ports and are reachable only inside the Docker network.
 - The Mac must be awake for the app to be reachable. On-demand generation (§8) covers readings missed while it slept.
 
-### 10.2 PWA without HTTPS
+### 10.3 PWA without HTTPS
 
 - The MVP runs over **plain HTTP** on the home network.
 - Web app manifest + icons so users can add AstroCat to their home screen. iOS should open it in standalone mode (verify early in M4); on Android without HTTPS it behaves like a home-screen shortcut.
@@ -384,16 +420,19 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 |---|---|
 | `users` | id, username, password_hash, display_name, language, grammatical_gender (neutral / feminine / masculine), timezone, created_at |
 | `birth_profiles` | user_id, birth_date, birth_time (nullable), place_name, latitude, longitude, birth_timezone, utc_offset_override (nullable) |
-| `natal_charts` | user_id, engine_version, input_hash, chart_json, computed_at |
-| `daily_readings` | user_id, local_date, language, input_hash, engine_json, reading_json, status (generating / ok / fallback / failed), model, prompt_version, engine_version, created_at |
-| `sessions` | id, user_id, created_at, expires_at |
+| `daily_readings` | user_id, local_date, language, input_hash, engine_json, reading_json, status (generating / ok / fallback / failed), attempts, rejection reasons, model, prompt_version, engine_version, duration, created_at |
+| `sessions` | id (SHA-256 of the cookie token), user_id, created_at, expires_at |
+| `places` | GeoNames id, name, country code, latitude, longitude, timezone, population |
+| `place_names` | place_id, normalized name (lowercase, no accents; one row per alternate name) |
+
+No table for natal charts: computing a birth chart takes milliseconds, so caching it would only add invalidation logic.
 
 ---
 
 ## 12. Open-source readiness
 
 - All configuration and secrets in `.env`, with a `.env.example` in the repo.
-- Birth data never leaves the local machine; no telemetry, no external APIs at runtime.
+- Birth data never leaves the local machine; no telemetry, no external APIs at runtime (the city list is downloaded once by an admin command).
 - Interpretation keywords and texts are our own.
 - Seed/demo data uses fictional people only.
 - Attribution for GeoNames (CC BY 4.0).
@@ -405,19 +444,19 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 The riskiest parts (engine plausibility, LLM quality in 3 languages) come first.
 
-| # | Milestone | Done when |
-|---|---|---|
-| M1 | Engine as CLI | Birth data + date → engine JSON (§7.1); unit tests with known charts; noon fallback works; `review --engine-only` shows varied scores over 30 days. |
-| M2 | LLM spike | Engine JSON → reading in EN/ES/DE; validation, retries, template fallback; a 14-day review (review tool, §6) per language passes a manual quality check: no jargon, correct weekdays, no obvious repetition. |
-| M3 | API + DB + auth | Login, onboarding, `GET /api/today`, scheduler, admin `create-user`. |
-| M4 | Frontend | Login, onboarding, Today, Settings; mobile layout; i18n; manifest. |
-| M5 | Polish | Mira's character sheet and 5 poses, loading animation, celestial styling. |
+| # | Milestone | Done when | Status |
+|---|---|---|---|
+| M1 | Engine as CLI | Birth data + date → engine JSON (§7.1); unit tests with known charts; noon fallback works; `review --engine-only` shows varied scores over 30 days. | ✅ done |
+| M2 | LLM spike | Engine JSON → reading in EN/ES/DE; validation, retries, template fallback; a 14-day review (review tool, §6) per language passes a manual quality check: no jargon, correct weekdays, no obvious repetition. | ✅ done |
+| M3 | API + DB + auth | Login, onboarding (incl. city search and form of address), `GET /api/today`, scheduler, admin `create-user`; readings stored with recent-reading lookup from the database. | ✅ done |
+| M4 | Frontend | Login, onboarding, Today, Settings; mobile layout; i18n incl. "Why Mira says this" texts; manifest; `web` service (Caddy). | next |
+| M5 | Polish | Mira's character sheet and 5 poses, loading animation, celestial styling. | |
 
 ---
 
 ## 14. Later
 
-- HTTPS (§10.2), then push notifications ("Mira has your reading 🐾") and offline mode.
+- HTTPS (§10.3), then push notifications ("Mira has your reading 🐾") and offline mode.
 - History view of past readings.
 - Lucky color / number of the day.
 - Shareable story cards (9:16).
@@ -428,8 +467,9 @@ The riskiest parts (engine plausibility, LLM quality in 3 languages) come first.
 
 ## 15. Open questions
 
-- Gemma 4 E2B quality in Spanish and German (answered by M2).
-- Final orbs, weights, and category mapping (tuned after M1 with real charts).
+- Final orbs, weights, and category mapping: calibrated in M1 on random charts; re-check with the 3 real users' charts once they are in the database.
+- Repeated favorite images across days (e.g. "flotter Spaziergang"): possibly pass recent suggestions to the prompt, or accept.
+- On quiet days the selection may consist only of house placements, and a Moon placement can be selected next to a Moon aspect (M1 observations). Readings were fine in M2; revisit only if users notice.
 
 ---
 

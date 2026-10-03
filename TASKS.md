@@ -1,60 +1,96 @@
-# Tasks — M2: LLM spike ✅
+# Tasks — M3: API, database, login, onboarding, scheduler ✅
 
-Goal (see [concept.md](concept.md) §3, §6, §7, §13): engine payload → Mira's reading in EN/ES/DE via local Ollama (`gemma4:e2b`), with validation, retries and a template fallback, checked with the review tool.
+Goal (see [concept.md](concept.md) §8–§11, §13): the engine and Mira's readings run as a FastAPI service in Docker, with PostgreSQL, invite-only login, onboarding data (incl. city search and form of address), on-demand readings and a background scheduler. The frontend follows in M4, so M3 is tested through the API and the CLI.
 
 **Done when:**
 
-- `astrocat reading` produces a validated reading (or a fallback) for any profile, date and language.
-- `astrocat review` (with LLM) renders 14 days per language next to the engine data, with flags.
-- A 14-day review per language passes a manual quality check: no jargon, correct weekdays, no obvious repetition, Mira's voice, correct register (*du* / *tú*).
+- `docker compose up` starts `db` and `api`; migrations run automatically.
+- An admin creates a user with `astrocat create-user`; the user logs in, completes onboarding via the API and gets today's reading from `GET /api/today`.
+- The scheduler generates readings in the background without blocking requests; missed runs (Mac asleep) are caught up.
+- Tests cover auth, onboarding, places, reading storage (no duplicates, recent readings from the database) and the scheduler.
 
 ---
 
 ## Setup
 
-- [x] Probe `gemma4:e2b` in Ollama: structured output (`format` with JSON schema), thinking mode, latency
-- [x] Configuration via environment: `OLLAMA_BASE_URL` (default `http://localhost:11434`; in Docker later `http://host.docker.internal:11434`), `OLLAMA_MODEL` (default `gemma4:e2b`), timeout
-- [x] HTTP client dependency (`httpx`, also needed by FastAPI in M3)
+- [x] Dependencies: FastAPI, Uvicorn, SQLAlchemy 2, Alembic, psycopg 3, argon2-cffi, APScheduler, tzdata
+- [x] Configuration from environment (`.env`, `.env.example`): database URL, Ollama, session lifetime, scheduler on/off
+- [x] `compose.yaml` with `db` (PostgreSQL) and `api`; `compose.dev.yaml` publishing ports on 127.0.0.1 for development and tests
+- [x] `api` Dockerfile (uv, Python 3.12); entrypoint runs migrations, then Uvicorn
 
-## Prompt
+## Database
 
-- [x] System prompt: Mira's persona, voice rules, "Mira never" rules, no-jargon rule, weekday rule, output length limits (§3)
-- [x] Language blocks (EN/ES/DE): language name, register, glossary of planet and sign names, 1–2 example readings
-- [x] User message: LLM payload + localized `weekday` / `date_label` (own tables for 3 languages, no extra dependency)
-- [x] Recent readings block: last 3 headlines + advice, "do not reuse these phrases or openings"
-- [x] `PROMPT_VERSION`, stored with every reading
+- [x] Models: `users`, `birth_profiles`, `sessions`, `daily_readings`, `places`, `place_names` (concept §11)
+- [x] Alembic migrations
+- [x] Unique constraint on the reading cache key `(user_id, local_date, language, input_hash)`
 
-## Generation
+## Auth
 
-- [x] Output JSON schema (§7.2), passed to Ollama's `format`
-- [x] Temperature ~0.7
-- [x] **Validation:** schema, length limits, forbidden topics, language check, jargon check, repetition check, wrong-weekday check
-- [x] **Retries:** up to 2, with the validation errors fed back into the retry
-- [x] **Template fallback:** per category × score × language (60 sentences) plus headline/summary/advice per pose × language
-- [x] Result record: reading, status (`ok` / `fallback`), attempts, validation errors, model, prompt version, engine version, duration
-- [x] Ollama unreachable → fallback immediately (no crash)
+- [x] Password hashing with argon2
+- [x] Sessions: random token in an `HttpOnly`, `SameSite=Lax` cookie, only its hash stored; ~90 days; logout deletes the session
+- [x] Login rate limiting (per username and client)
+- [x] CLI: `astrocat create-user`, `astrocat reset-password`
+- [x] Change own password via the API
 
-## CLI
+## Places (city search)
 
-- [x] `astrocat reading --profile <yaml> [--date] [--lang]` → reading JSON
-- [x] `astrocat review` without `--engine-only`: days generated in order (recent-readings block exercised), reading text next to engine data, flags for retries/fallbacks/validation errors, timing summary
+- [x] `astrocat places import`: download GeoNames `cities1000` once, load into `places` + `place_names` (alternate names, accent-insensitive)
+- [x] Search endpoint: prefix match, sorted by population, returns name, country, coordinates, timezone
 
-## Tests (no Ollama needed)
+## Onboarding and settings
 
-- [x] Date labels for all 3 languages
-- [x] Validators: each check catches a bad example and passes a good one
-- [x] Fallback covers every category × score × language and every pose × language, and passes validation
-- [x] Generation flow with a fake client: ok on first try, retry then ok, all invalid → fallback, unreachable → fallback
-- [x] Prompt contains glossary, examples, recent readings, date label; never degrees or orbs
+- [x] `GET /api/me` (incl. "onboarding complete")
+- [x] Settings: display name, language, form of address, current timezone
+- [x] Birth data: date, optional time, place (from the search), optional UTC offset override
 
-## Quality check
+## Readings
 
-- [x] 14-day review per language (Anna/DE, Lucía/ES, Sam/EN, plus one cross-language run)
-- [x] Record findings and prompt changes in the log below; decide whether `gemma4:e2b` is good enough per language (alternative: `gemma4:e4b`, already installed) → **`gemma4:e4b` for all languages**
+- [x] Reading service: get or create the reading for (user, local date, language); `generating` status; a second request waits instead of starting another LLM call; stale `generating` rows are taken over
+- [x] Recent readings (last 3, same language) loaded from the database for the prompt
+- [x] `GET /api/today`: reading, paw ratings, pose, Moon, factors for "Why Mira says this"
+- [x] Changing birth data or the form of address produces a new reading (via `input_hash`)
+
+## Scheduler
+
+- [x] In-process APScheduler job every 15 minutes: for each onboarded user whose local day has started, generate today's reading if missing (catches up after sleep)
+- [x] One generation at a time (Ollama runs one model), never blocking API requests
+
+## Tests
+
+- [x] Test database (PostgreSQL in Docker), fake LLM client
+- [x] Auth: login, wrong password, rate limit, logout, session expiry, password change
+- [x] Onboarding and settings validation
+- [x] Places import (small fixture file) and search (accents, alternate names, population order)
+- [x] Readings: created once, reused, regenerated after birth-data change, recent readings, concurrent requests → one LLM call
+- [x] Scheduler: generates for users whose day started, skips others, catches up
+
+## End-to-end check
+
+- [x] In Docker with real Ollama: create user → login → onboarding → `GET /api/today` → reading; scheduler run in the logs
 
 ---
 
-## Log
+## M3 log
+
+- **Stack:** FastAPI, SQLAlchemy 2 + Alembic (migrations inside the package, run on every container start), psycopg 3, argon2-cffi, APScheduler 3, PostgreSQL 17. 142 tests (38 need the dev database; they skip with a hint if it isn't running).
+- **Decisions while building:**
+  - **No `natal_charts` table:** computing a birth chart takes milliseconds, so caching it would only add invalidation logic.
+  - **No `timezonefinder`:** GeoNames `cities1000` already contains each city's IANA timezone.
+  - **City search:** `places` + `place_names` (all Latin-script alternate names, lowercase, accents removed), prefix search with a `text_pattern_ops` index, biggest city first. Import: 171,102 places, 607,528 names, ~16 s, database ~120 MB.
+  - **Scheduler as a catch-up loop:** every 15 minutes it generates today's reading for every user whose local day has started (from 00:05) and who has none yet. Handles each user's timezone and a sleeping Mac with the same code.
+  - **One generation at a time** (a process-wide lock), because Ollama runs one model.
+  - **Duplicate protection:** `INSERT … ON CONFLICT DO NOTHING` on the reading key; other requests wait (up to 90 s, then `503` with `Retry-After`); failed rows are taken over at once, abandoned `generating` rows after 5 minutes.
+  - **Sessions slide:** with less than half of the 90 days left, a request renews the session, so phones in daily use never get logged out. Only a SHA-256 of the token is stored. A password change logs out all other devices.
+  - **Manual birth place** possible (name, coordinates, timezone) for places missing from the list.
+  - **JSONB does not keep key order:** the API restores the category order (love, work, energy, mood) explicitly.
+- **End-to-end check (Docker, real Ollama, 2026-10-03):** create user → login → search "münch" (Munich first) → form of address → birth place via search → `GET /api/today`: German reading with feminine forms, 16.4 s on the first call (incl. model load), 30 ms from the cache. Simulated scheduler run "next morning 07:40": found the missing day, generated it in 8.8 s, nothing due afterwards. Demo user deleted again; the city list stays.
+
+## Deferred to later milestones
+
+- Frontend (login, onboarding, Today, Settings), "Why Mira says this" texts in EN/ES/DE, `web` service with Caddy → M4.
+- `astrocat review --user <username>` (review from the database) → when needed.
+
+## M2 log (done)
 
 - **Probe (2026-10-03):** `gemma4:e2b` (5.1B, Q4_K_M) supports `format` with a JSON schema. `think: true` triples the tokens without better text, so it stays off. ~4 s per reading, plus ~5 s model load on the first call.
 - **Prompt v1, 3 × 14 days:** 42/42 valid, 0 fallbacks, 39 on the first attempt (retries only from the repetition check), median ~3.7 s. No jargon, no forbidden topics, weekdays always correct when mentioned. Quality problems:
@@ -87,20 +123,9 @@ Goal (see [concept.md](concept.md) §3, §6, §7, §13): engine payload → Mira
 - **Grammatical gender as a per-user setting (decided 2026-10-03):** profile field `grammatical_gender` (`neutral` default, `feminine`, `masculine`), part of `input_hash`, passed in the payload. Per-language prompt hints for each value; the check rejects only the wrong forms (neutral: any gendered adjective). Lucía set to `feminine`: 14/14 ok, consistently feminine forms ("cómoda contigo misma", "agradecida"), zero gender rejections (v4: 3–5 per 14 days).
 - **Fix after v4:** English headlines lowercased weekdays ("for saturday") → sentence-case rule now keeps proper nouns capitalized.
 
-## Open from M1
-
-- On quiet days (e.g. Sam, 2026-10-03) the selection consists only of house placements → check whether the LLM makes good readings from that.
-- A Moon placement can be selected next to a Moon aspect, which partly repeats the Moon.
-
 ## M1 tuning log (done)
 
 - **2026-10-03, first run:** paws too extreme (1 and 5 on ~40% of days) and a constant positive bias in love. Cause: placements were mapped to categories by planet, so "Venus in any house" pushed love up every day for everyone. Fix: placements count only through their house; the background theme counts half (`background_score_share: 0.5`).
 - **2026-10-03, calibration:** over 40 random charts × 20 days the raw scores had a small positive bias (+0.1, more harmonious than tense aspect types). `score_scale: 1.0`, `score_center: 0.1` → paws 1–5 ≈ 7 / 25 / 33 / 26 / 7 %. Days without any Moon aspect: ~4% (Moon placement used instead).
 - **Demo profiles, 2026-10-01 + 30 days:** all five poses occur; Lucía is above average this month (her chart, not a bias).
 
-## Deferred to later milestones
-
-- City search (GeoNames `cities1000`, `timezonefinder`) → M3, with onboarding.
-- "Why Mira says this" texts in EN/ES/DE → M4 (the review report uses English descriptions).
-- Storing readings and recent-reading lookup from the database → M3 (M2 keeps recent readings in memory during a review run).
-- Form of address (`grammatical_gender`) in onboarding and settings, column in `users` → M3/M4 (the engine and LLM side is done).

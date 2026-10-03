@@ -1,0 +1,33 @@
+# AstroCat services (concept §10). Ollama runs natively on macOS, not in Docker.
+# Development: docker compose -f compose.yaml -f compose.dev.yaml up -d
+name: astrocat
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: astrocat
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: astrocat
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U astrocat -d astrocat"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build: ./api
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://astrocat:${POSTGRES_PASSWORD}@db:5432/astrocat
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  db-data:

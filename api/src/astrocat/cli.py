@@ -23,7 +23,117 @@ def _echo_json(data: dict) -> None:
 
 @click.group()
 def main() -> None:
-    """AstroCat engine tools."""
+    """AstroCat tools: engine, readings, users, server."""
+    from astrocat.settings import load_env_file
+
+    load_env_file()
+
+
+# --- service and database -------------------------------------------------------------
+
+
+@main.command()
+def migrate() -> None:
+    """Apply database migrations."""
+    from astrocat.migrate import upgrade
+
+    upgrade()
+    click.echo("Database is up to date.")
+
+
+@main.command()
+@click.option("--host", default="0.0.0.0", show_default=True)
+@click.option("--port", default=8000, show_default=True)
+def serve(host: str, port: int) -> None:
+    """Run the API server (with the background scheduler)."""
+    import logging
+
+    import uvicorn
+
+    from astrocat.app import create_app
+
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    uvicorn.run(create_app(), host=host, port=port, proxy_headers=True, log_level="info")
+
+
+def _ask_password() -> str:
+    from astrocat.auth import MIN_PASSWORD_LENGTH
+
+    while True:
+        password = click.prompt("Password", hide_input=True, confirmation_prompt=True)
+        if len(password) >= MIN_PASSWORD_LENGTH:
+            return password
+        click.echo(f"At least {MIN_PASSWORD_LENGTH} characters, please.")
+
+
+@main.command("create-user")
+@click.argument("username")
+@click.option("--display-name", help="Name shown in the app (default: the username).")
+@click.option("--language", type=click.Choice(LANGUAGES), default="en", show_default=True)
+@click.option("--timezone", "tz", default="Europe/Berlin", show_default=True, help="Current IANA timezone.")
+def create_user(username: str, display_name: str | None, language: str, tz: str) -> None:
+    """Create a user (invite-only: there is no public sign-up)."""
+    from sqlalchemy import select
+
+    from astrocat.auth import hash_password, normalize_username
+    from astrocat.db import User, session_factory
+
+    name = normalize_username(username)
+    with session_factory()() as db:
+        if db.scalar(select(User).where(User.username == name)):
+            raise click.ClickException(f"user {name!r} already exists")
+        password = _ask_password()
+        db.add(
+            User(
+                username=name,
+                password_hash=hash_password(password),
+                display_name=display_name or username,
+                language=language,
+                timezone=tz,
+                grammatical_gender="neutral",
+            )
+        )
+        db.commit()
+    click.echo(f"Created user {name!r}. Birth data and the remaining settings are filled in during onboarding.")
+
+
+@main.command("reset-password")
+@click.argument("username")
+def reset_password(username: str) -> None:
+    """Set a new password and log the user out everywhere."""
+    from sqlalchemy import select
+
+    from astrocat.auth import delete_user_sessions, hash_password, normalize_username
+    from astrocat.db import User, session_factory
+
+    with session_factory()() as db:
+        user = db.scalar(select(User).where(User.username == normalize_username(username)))
+        if user is None:
+            raise click.ClickException(f"no user {username!r}")
+        user.password_hash = hash_password(_ask_password())
+        db.commit()
+        delete_user_sessions(db, user.id)
+    click.echo("Password changed; all sessions of this user were logged out.")
+
+
+@main.group()
+def places() -> None:
+    """Birth-place search data (GeoNames)."""
+
+
+@places.command("import")
+@click.option("--file", "source", help="Local GeoNames file instead of downloading cities1000.")
+def places_import(source: str | None) -> None:
+    """Load the city list (downloads ~10 MB from geonames.org once)."""
+    from astrocat.db import session_factory
+    from astrocat.places import import_places
+
+    with session_factory()() as db:
+        count = import_places(db, source)
+    click.echo(f"Imported {count} places. Data: GeoNames (CC BY 4.0), https://www.geonames.org/")
+
+
+# --- engine and readings ----------------------------------------------------------------
 
 
 @main.command()

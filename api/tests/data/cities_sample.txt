@@ -1,0 +1,7 @@
+2867714	Munich	Munich	Monaco,Monaco di Baviera,Muenchen,Munchen,Munich,Múnich,München,Мюнхен	48.13743	11.57549	P	PPLA	DE		02	091	09162	09162000	1260391		524	Europe/Berlin	2023-10-12
+2510911	Sevilla	Sevilla	Seville,Sevilha,Sevilla,Séville,Севилья	37.38283	-5.97317	P	PPLA2	ES		51	SE	41091		684234		11	Europe/Madrid	2024-01-01
+2654675	Bristol	Bristol	Bristol,Bristolo,Бристоль	51.45523	-2.59665	P	PPLA2	GB		ENG	B7	00HB		430713		11	Europe/London	2024-01-01
+2911298	Hamburg	Hamburg	Amburgo,Hambourg,Hamburgo,Hamburg	53.55073	9.99302	P	PPLA	DE		04	00	02000	02000000	1845229		8	Europe/Berlin	2024-01-01
+2843729	Rüsselsheim	Ruesselsheim	Ruesselsheim,Russelsheim,Rüsselsheim am Main	49.98955	8.42251	P	PPLA4	DE		05	064	06433	06433012	61343		90	Europe/Berlin	2024-01-01
+2867543	Münster	Muenster	Muenster,Munster,Münster	51.96236	7.62571	P	PPLA3	DE		07	055	05515	05515000	270184		60	Europe/Berlin	2024-01-01
+3117735	Madrid	Madrid	Madrid,Madri,Madryt	40.4165	-3.70256	P	PPLC	ES		29	M	28079		3255944		665	Europe/Madrid	2024-01-01

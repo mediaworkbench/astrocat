@@ -1,9 +1,15 @@
 # AstroCat API
 
-Astrology engine (M1) — later also the FastAPI service. See [../concept.md](../concept.md) and [../TASKS.md](../TASKS.md).
+Astrology engine, Mira's readings via Ollama, and the FastAPI service with database, login and scheduler. See [../concept.md](../concept.md) and [../TASKS.md](../TASKS.md).
+
+For running the whole service, see the [root README](../README.md). For development on the Mac:
 
 ```sh
 uv sync
+docker compose -f ../compose.yaml -f ../compose.dev.yaml up -d db   # PostgreSQL on 127.0.0.1:55432
+uv run astrocat migrate
+uv run astrocat serve                                               # API on :8000, with the scheduler
+uv run pytest                                                       # database tests use a separate astrocat_test database
 uv run astrocat chart --profile demo/anna.yaml
 uv run astrocat day --profile demo/anna.yaml --date 2026-10-03            # full engine output
 uv run astrocat day --profile demo/anna.yaml --date 2026-10-03 --payload  # LLM payload
