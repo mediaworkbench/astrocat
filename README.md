@@ -15,6 +15,7 @@ It runs entirely on one Mac at home: a deterministic astrology engine decides *w
 - Personal daily reading from each user's birth chart (date, time and place of birth) and today's planetary transits, not just the Sun sign
 - Works without a birth time too: falls back to noon and solar houses
 - Headline, short summary, four categories with 1–5 paw ratings (love, work, energy, mood) and Mira's advice
+- Look ahead: switch between today, tomorrow and the day after tomorrow
 - "Why Mira says this": the day's strongest astrological influences in plain language ("Venus trine your Moon · supportive · 5th house: romance, play and creativity")
 - English, Spanish and German, written directly in the language, with the form of address each user chooses (feminine, masculine or neutral forms)
 - Quality checks on every generated reading (no jargon, no medical/financial advice, right language and weekday, no repetition across days), with automatic retries and a template fallback, so there is always a reading
@@ -33,7 +34,7 @@ It runs entirely on one Mac at home: a deterministic astrology engine decides *w
 
 ### Running it
 
-- Readings are generated in the background shortly after midnight in each user's timezone, and caught up automatically if the Mac was asleep
+- Readings for today, tomorrow and the day after are prepared in the background, in each user's timezone, and caught up automatically if the Mac was asleep or Ollama was down
 - Everything local: no telemetry, no cloud services, no external API calls at runtime
 - One `docker compose up` for the app, API and database; Ollama runs natively on the Mac
 
@@ -177,7 +178,7 @@ All settings live in `.env` (copied from [.env.example](.env.example)). After a 
 | `POSTGRES_PASSWORD` | — (required) | Database password |
 | `REGISTRATION_CODE` | empty | Invite code for **Create account** in the app; empty turns registration off |
 | `WEB_PORT` | `80` | Port of the app on your network |
-| `OLLAMA_BASE_URL` | empty | Where Ollama runs. Empty = on this Mac. Set it to use Ollama on another computer, e.g. `http://192.168.1.50:11434` (that Ollama must listen on the network: `OLLAMA_HOST=0.0.0.0`) |
+| `OLLAMA_BASE_URL` | empty | Where Ollama runs. Empty = on this Mac. Set it to use Ollama on another computer, e.g. `http://192.168.1.50:11434` (a bare host gets `http://` and port 11434 added) (that Ollama must listen on the network: `OLLAMA_HOST=0.0.0.0`) |
 | `OLLAMA_MODEL` | `gemma4:e4b` | Model that writes the readings (`gemma4:e2b` is faster, but weaker in Spanish and German) |
 | `OLLAMA_TIMEOUT` | `120` | Seconds to wait for the model |
 | `SESSION_DAYS` | `90` | Login lifetime; renewed automatically while the app is used |
@@ -185,6 +186,7 @@ All settings live in `.env` (copied from [.env.example](.env.example)). After a 
 | `SCHEDULER_ENABLED` | `true` | Background generation of daily readings |
 | `SCHEDULER_INTERVAL_MINUTES` | `15` | How often the scheduler looks for missing readings |
 | `GENERATION_START` | `00:05` | Local time from which a user's new day is generated |
+| `GENERATE_DAYS_AHEAD` | `2` | Also prepare tomorrow and the day after, so the app's day switch is instant; `0` = only today |
 | `SOURCE_URL` | `https://github.com/mediaworkbench/astrocat` | Link to the source code, shown in the app's settings (AGPL); point it to your fork if you change the code |
 
 Advanced (rarely needed): `LOGIN_MAX_FAILURES` (5) and `LOGIN_WINDOW_MINUTES` (15) for the login and invite-code rate limit, `WAIT_FOR_GENERATION_SECONDS` (90), `STALE_GENERATION_MINUTES` (5).

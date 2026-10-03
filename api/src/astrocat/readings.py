@@ -16,7 +16,7 @@ from astrocat.db import BirthProfile, DailyReading, User, utcnow
 from astrocat.engine.daily import CATEGORIES
 from astrocat.engine.profile import BirthData, Profile
 from astrocat.llm import RecentReading, generate_reading
-from astrocat.llm.client import ChatClient
+from astrocat.llm.client import UNAVAILABLE_PREFIX, ChatClient
 from astrocat.settings import get_settings
 
 log = logging.getLogger(__name__)
@@ -77,6 +77,19 @@ def recent_readings(db: Session, user_id: int, language: str, before: date, limi
         )
         for r in rows
     ]
+
+
+def fell_back_for_outage(row: DailyReading) -> bool:
+    """A template reading because Ollama was unreachable, not because the model failed the checks."""
+    return row.status == "fallback" and any(
+        UNAVAILABLE_PREFIX in str(reason) for attempt in (row.errors or []) for reason in attempt
+    )
+
+
+def release_for_retry(db: Session, reading_id: int) -> None:
+    """Mark a reading as failed, so the next get_or_create_reading generates it again right away."""
+    db.execute(update(DailyReading).where(DailyReading.id == reading_id).values(status="failed", updated_at=utcnow()))
+    db.commit()
 
 
 def find_reading(db: Session, user: User, day: date) -> DailyReading | None:

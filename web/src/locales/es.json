@@ -85,7 +85,11 @@
     "generatingSlow": "La lectura de hoy tarda un momento. Mira casi ha terminado.",
     "fallbackNote": "Hoy Mira estaba un poco dormida, así que esta lectura es más corta de lo normal.",
     "paws": "{{score}} de 5 patitas",
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "days": "Día",
+    "dayToday": "Hoy",
+    "dayTomorrow": "Mañana",
+    "dayAfter": "Pasado mañana"
   },
   "category": {
     "love": "Amor",

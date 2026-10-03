@@ -85,7 +85,11 @@
     "generatingSlow": "Die heutige Lesung braucht einen Moment. Mira ist gleich fertig.",
     "fallbackNote": "Mira war heute etwas verschlafen, deshalb ist diese Lesung kürzer als sonst.",
     "paws": "{{score}} von 5 Pfoten",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "days": "Tag",
+    "dayToday": "Heute",
+    "dayTomorrow": "Morgen",
+    "dayAfter": "Übermorgen"
   },
   "category": {
     "love": "Liebe",

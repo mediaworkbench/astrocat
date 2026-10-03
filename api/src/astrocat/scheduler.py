@@ -7,7 +7,7 @@ Mac was asleep.
 """
 
 import logging
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -15,23 +15,44 @@ from sqlalchemy import select
 
 from astrocat.db import BirthProfile, User, utcnow
 from astrocat.llm.client import ChatClient
-from astrocat.readings import ReadingNotReady, SessionFactory, find_reading, get_or_create_reading, local_today
+from astrocat.readings import (
+    ReadingNotReady,
+    SessionFactory,
+    fell_back_for_outage,
+    find_reading,
+    get_or_create_reading,
+    local_today,
+    release_for_retry,
+)
 from astrocat.settings import get_settings
 
 log = logging.getLogger(__name__)
 
 
 def due_users(sessions: SessionFactory, now: datetime) -> list[tuple[int, date]]:
-    """(user id, local day) for onboarded users whose reading for today is missing."""
-    start = get_settings().generation_start
+    """(user id, local day) of missing readings: today first for everyone, then the days ahead.
+
+    A template reading caused by an Ollama outage counts as missing, so it is
+    replaced once Ollama is reachable again.
+
+    Generating the days in order also gives each reading its predecessors for
+    the prompt's recent-readings block.
+    """
+    settings = get_settings()
     due = []
     with sessions() as db:
         users = db.scalars(select(User).join(BirthProfile)).all()
-        for user in users:
-            local_time = now.astimezone(ZoneInfo(user.timezone)).time()
-            day = local_today(user, now)
-            if local_time >= start and find_reading(db, user, day) is None:
-                due.append((user.id, day))
+        for offset in range(settings.generate_days_ahead + 1):
+            for user in users:
+                if now.astimezone(ZoneInfo(user.timezone)).time() < settings.generation_start:
+                    continue  # the local day has only just begun
+                day = local_today(user, now) + timedelta(days=offset)
+                row = find_reading(db, user, day)
+                if row is None:
+                    due.append((user.id, day))
+                elif fell_back_for_outage(row):
+                    release_for_retry(db, row.id)
+                    due.append((user.id, day))
     return due
 
 

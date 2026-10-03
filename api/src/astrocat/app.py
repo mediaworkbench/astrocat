@@ -25,7 +25,7 @@ from astrocat.readings import (
     local_today,
     reading_response,
 )
-from astrocat.settings import get_settings, load_env_file
+from astrocat.settings import MAX_DAY_OFFSET, get_settings, load_env_file
 
 log = logging.getLogger(__name__)
 
@@ -351,13 +351,17 @@ def places(user: CurrentUser, db: DB, q: Annotated[str, Query(min_length=2, max_
     return [_place_dict(p) for p in search_places(db, q)]
 
 
-@router.get("/today")
-def today(
+@router.get("/reading")
+def reading(
     user: CurrentUser,
     client: Annotated[ChatClient, Depends(llm_client)],
     sessions: Annotated[Any, Depends(sessions_dep)],
+    offset: Annotated[
+        int, Query(ge=0, le=MAX_DAY_OFFSET, description="0 = today, 1 = tomorrow, 2 = the day after")
+    ] = 0,
 ) -> dict[str, Any]:
-    day = local_today(user)
+    """The reading for today or one of the next days, in the user's own timezone."""
+    day = local_today(user) + dt.timedelta(days=offset)
     try:
         row = get_or_create_reading(sessions, user.id, day, client)
     except OnboardingIncomplete as exc:
@@ -367,7 +371,16 @@ def today(
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE, "reading is being generated", {"Retry-After": "5"}
         ) from exc
-    return reading_response(row)
+    return reading_response(row) | {"offset": offset}
+
+
+@router.get("/today")
+def today(
+    user: CurrentUser,
+    client: Annotated[ChatClient, Depends(llm_client)],
+    sessions: Annotated[Any, Depends(sessions_dep)],
+) -> dict[str, Any]:
+    return reading(user, client, sessions, 0)
 
 
 # --- app -------------------------------------------------------------------------------

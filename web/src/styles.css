@@ -223,6 +223,15 @@ p {
   height: 22px;
 }
 
+/* Today | Tomorrow | Day after tomorrow */
+.day-tabs {
+  margin-bottom: 10px;
+}
+
+.day-tabs button {
+  min-height: 44px;
+}
+
 /* --- Mira (concept §3: five poses from one illustration) ------------------------------- */
 
 .mira {

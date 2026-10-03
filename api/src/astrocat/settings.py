@@ -6,6 +6,9 @@ from datetime import time
 from functools import cache
 from pathlib import Path
 
+# The app offers today, tomorrow and the day after tomorrow.
+MAX_DAY_OFFSET = 2
+
 
 def _bool(name: str, default: bool) -> bool:
     value = os.environ.get(name)
@@ -27,6 +30,8 @@ class Settings:
     stale_generation_minutes: int
     # How long a request waits for a reading another request is generating.
     wait_for_generation_seconds: int
+    # The scheduler also prepares this many future days (the app offers today, tomorrow, the day after).
+    generate_days_ahead: int
     # Invite code for self-registration in the app; empty = registration off (accounts only via the CLI).
     registration_code: str
 
@@ -69,4 +74,5 @@ def get_settings() -> Settings:
         stale_generation_minutes=int(os.environ.get("STALE_GENERATION_MINUTES", "5")),
         wait_for_generation_seconds=int(os.environ.get("WAIT_FOR_GENERATION_SECONDS", "90")),
         registration_code=os.environ.get("REGISTRATION_CODE", "").strip(),
+        generate_days_ahead=max(0, min(MAX_DAY_OFFSET, int(os.environ.get("GENERATE_DAYS_AHEAD") or "2"))),
     )

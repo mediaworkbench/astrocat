@@ -85,7 +85,11 @@
     "generatingSlow": "Today's reading takes a moment. Mira is almost done.",
     "fallbackNote": "Mira was a little sleepy today, so this reading is shorter than usual.",
     "paws": "{{score}} of 5 paws",
-    "settings": "Settings"
+    "settings": "Settings",
+    "days": "Day",
+    "dayToday": "Today",
+    "dayTomorrow": "Tomorrow",
+    "dayAfter": "Day after"
   },
   "category": {
     "love": "Love",

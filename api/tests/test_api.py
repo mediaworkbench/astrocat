@@ -204,3 +204,23 @@ def test_changing_birth_data_or_language_gives_a_new_reading(api, make_user, fak
     api.put("/api/me/settings", json={"language": "de"})
     third = api.get("/api/today").json()
     assert third["language"] == "de"
+
+
+def test_reading_for_tomorrow_and_the_day_after(api, make_user, fake_llm):
+    from datetime import date, timedelta
+
+    make_user()
+    login(api)
+    today = api.get("/api/reading").json()
+    tomorrow = api.get("/api/reading", params={"offset": 1}).json()
+    after = api.get("/api/reading", params={"offset": 2}).json()
+    assert (today["offset"], tomorrow["offset"], after["offset"]) == (0, 1, 2)
+    first = date.fromisoformat(today["date"])
+    assert date.fromisoformat(tomorrow["date"]) == first + timedelta(days=1)
+    assert date.fromisoformat(after["date"]) == first + timedelta(days=2)
+    # Tomorrow's prompt already knows today's reading (recent-readings block).
+    assert today["reading"]["headline"] in fake_llm.calls[1][1]["content"]
+    assert api.get("/api/today").json()["date"] == today["date"]  # /api/today = offset 0
+    assert len(fake_llm.calls) == 3
+    for bad in (-1, 3):
+        assert api.get("/api/reading", params={"offset": bad}).status_code == 422

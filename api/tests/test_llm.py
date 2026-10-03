@@ -270,3 +270,19 @@ def test_ollama_settings_from_environment(monkeypatch):
     client = OllamaClient()
     assert client.base_url == "http://192.168.1.50:11434"
     assert client.model == "gemma4:e2b"
+
+
+@pytest.mark.parametrize(
+    ("value", "url"),
+    [
+        ("host.docker.internal", "http://host.docker.internal:11434"),
+        ("192.168.1.50:8080", "http://192.168.1.50:8080"),
+        ("http://host.docker.internal:11434/", "http://host.docker.internal:11434"),
+        ("https://ollama.example.org", "https://ollama.example.org"),  # explicit URLs stay as written
+        ("  localhost  ", "http://localhost:11434"),
+    ],
+)
+def test_ollama_url_is_normalized(value, url):
+    from astrocat.llm.client import normalize_base_url
+
+    assert normalize_base_url(value) == url

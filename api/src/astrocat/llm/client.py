@@ -5,9 +5,22 @@ from typing import Any, Protocol
 
 import httpx
 
+DEFAULT_PORT = 11434
+# Marker in the stored rejection reasons; the scheduler retries readings that fell back because of it.
+UNAVAILABLE_PREFIX = "Ollama request failed"
+
 
 class LLMUnavailable(RuntimeError):
     """Ollama is unreachable or returned an error."""
+
+
+def normalize_base_url(value: str) -> str:
+    """Accept "host", "host:port" or a full URL; a bare host gets http:// and Ollama's default port."""
+    url = value.strip().rstrip("/")
+    if "://" not in url:
+        host, _, port = url.partition(":")
+        url = f"http://{host}:{port or DEFAULT_PORT}"
+    return url
 
 
 class ChatClient(Protocol):
@@ -24,7 +37,7 @@ class OllamaClient:
         timeout: float | None = None,
     ) -> None:
         # `or` instead of a get() default: an empty value in .env means "use the default" too.
-        self.base_url = (base_url or os.environ.get("OLLAMA_BASE_URL") or "http://localhost:11434").rstrip("/")
+        self.base_url = normalize_base_url(base_url or os.environ.get("OLLAMA_BASE_URL") or "http://localhost:11434")
         # e4b instead of e2b: clearly better Spanish and German at ~8 s per reading (M2 review, v4).
         self.model = model or os.environ.get("OLLAMA_MODEL") or "gemma4:e4b"
         self.timeout = timeout or float(os.environ.get("OLLAMA_TIMEOUT") or "120")
@@ -43,4 +56,4 @@ class OllamaClient:
             response.raise_for_status()
             return response.json()["message"]["content"]
         except (httpx.HTTPError, KeyError, ValueError) as exc:
-            raise LLMUnavailable(f"Ollama request failed: {exc}") from exc
+            raise LLMUnavailable(f"{UNAVAILABLE_PREFIX} ({self.base_url}): {exc}") from exc

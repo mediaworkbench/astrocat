@@ -131,4 +131,6 @@ export const api = {
     request<void>("POST", "/api/me/password", { current_password, new_password }),
   searchPlaces: (q: string) => request<Place[]>("GET", `/api/places?q=${encodeURIComponent(q)}`),
   today: () => request<Today>("GET", "/api/today"),
+  /** 0 = today, 1 = tomorrow, 2 = the day after tomorrow (in the user's timezone). */
+  reading: (offset: 0 | 1 | 2) => request<Today>("GET", `/api/reading?offset=${offset}`),
 };
