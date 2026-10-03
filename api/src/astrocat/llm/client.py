@@ -23,10 +23,11 @@ class OllamaClient:
         model: str | None = None,
         timeout: float | None = None,
     ) -> None:
-        self.base_url = (base_url or os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434")).rstrip("/")
+        # `or` instead of a get() default: an empty value in .env means "use the default" too.
+        self.base_url = (base_url or os.environ.get("OLLAMA_BASE_URL") or "http://localhost:11434").rstrip("/")
         # e4b instead of e2b: clearly better Spanish and German at ~8 s per reading (M2 review, v4).
-        self.model = model or os.environ.get("OLLAMA_MODEL", "gemma4:e4b")
-        self.timeout = timeout or float(os.environ.get("OLLAMA_TIMEOUT", "120"))
+        self.model = model or os.environ.get("OLLAMA_MODEL") or "gemma4:e4b"
+        self.timeout = timeout or float(os.environ.get("OLLAMA_TIMEOUT") or "120")
 
     def chat(self, messages: list[dict[str, str]], schema: dict[str, Any], temperature: float = 0.7) -> str:
         body = {

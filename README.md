@@ -177,6 +177,7 @@ All settings live in `.env` (copied from [.env.example](.env.example)). After a 
 | `POSTGRES_PASSWORD` | — (required) | Database password |
 | `REGISTRATION_CODE` | empty | Invite code for **Create account** in the app; empty turns registration off |
 | `WEB_PORT` | `80` | Port of the app on your network |
+| `OLLAMA_BASE_URL` | empty | Where Ollama runs. Empty = on this Mac. Set it to use Ollama on another computer, e.g. `http://192.168.1.50:11434` (that Ollama must listen on the network: `OLLAMA_HOST=0.0.0.0`) |
 | `OLLAMA_MODEL` | `gemma4:e4b` | Model that writes the readings (`gemma4:e2b` is faster, but weaker in Spanish and German) |
 | `OLLAMA_TIMEOUT` | `120` | Seconds to wait for the model |
 | `SESSION_DAYS` | `90` | Login lifetime; renewed automatically while the app is used |

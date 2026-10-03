@@ -254,3 +254,19 @@ def test_system_prompt_contains_language_and_example(payload):
     system = build_messages(payload | {"language": "es"}, SATURDAY, [])[0]["content"]
     assert "Spanish" in system and "tú" in system
     assert pack("es")["example"]["headline"] in system
+
+
+def test_ollama_settings_from_environment(monkeypatch):
+    from astrocat.llm import OllamaClient
+
+    monkeypatch.setenv("OLLAMA_BASE_URL", "")  # empty in .env = default
+    monkeypatch.setenv("OLLAMA_MODEL", "")
+    client = OllamaClient()
+    assert client.base_url == "http://localhost:11434"
+    assert client.model == "gemma4:e4b"
+
+    monkeypatch.setenv("OLLAMA_BASE_URL", "http://192.168.1.50:11434/")
+    monkeypatch.setenv("OLLAMA_MODEL", "gemma4:e2b")
+    client = OllamaClient()
+    assert client.base_url == "http://192.168.1.50:11434"
+    assert client.model == "gemma4:e2b"

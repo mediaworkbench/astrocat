@@ -201,7 +201,7 @@ Keywords are chosen with a random generator seeded by user and date, so the outp
 
 ## 6. LLM layer
 
-- **Runtime:** Ollama on the macOS host (outside Docker), reached from containers at `http://host.docker.internal:11434`.
+- **Runtime:** Ollama on the macOS host (outside Docker), reached from containers at `http://host.docker.internal:11434`. `OLLAMA_BASE_URL` in `.env` points it elsewhere, e.g. to a stronger computer in the network.
 - **Model:** `gemma4:e4b` (chosen in M2: `e2b` is fine for English but too weak in Spanish and German; `e4b` takes ~8 s per reading); base URL and model name are configurable via `.env`.
 - **Role:** turns the engine JSON into prose. It never sees raw positions or degrees, and it never decides ratings or poses.
 - **Thinking mode off:** `think: true` roughly triples the tokens without better readings (M2 probe).
