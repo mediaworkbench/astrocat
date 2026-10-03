@@ -449,7 +449,7 @@ No table for natal charts: computing a birth chart takes milliseconds, so cachin
 - Interpretation keywords and texts are our own.
 - Seed/demo data uses fictional people only.
 - Attribution for GeoNames (CC BY 4.0).
-- **License: AGPL-3.0.** `libephemeris` is AGPL-3.0-only (checked 2026-10-03, v3.2.1), so AstroCat is released under AGPL-3.0 too. Because the app is used over a network, the AGPL requires offering its source to users: add a "Source code" link (to the GitHub repo) in Settings or the footer.
+- **License: AGPL-3.0.** `libephemeris` is AGPL-3.0-only (checked 2026-10-03, v3.2.1), so AstroCat is released under AGPL-3.0 too. Because the app is used over a network, the AGPL requires offering its source to users: the settings screen links to <https://github.com/mediaworkbench/astrocat> (`SOURCE_URL`). The license text is in `LICENSE`.
 
 ---
 

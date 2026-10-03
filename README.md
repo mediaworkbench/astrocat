@@ -81,7 +81,7 @@ ollama run gemma4:e4b "Say hello in one sentence."   # quick check
 ### 2. Get the code and configure it
 
 ```sh
-git clone <repository-url> astrocat
+git clone https://github.com/mediaworkbench/astrocat.git
 cd astrocat
 cp .env.example .env
 ```
@@ -184,7 +184,7 @@ All settings live in `.env` (copied from [.env.example](.env.example)). After a 
 | `SCHEDULER_ENABLED` | `true` | Background generation of daily readings |
 | `SCHEDULER_INTERVAL_MINUTES` | `15` | How often the scheduler looks for missing readings |
 | `GENERATION_START` | `00:05` | Local time from which a user's new day is generated |
-| `SOURCE_URL` | empty | Link to the published source code, shown in the app (AGPL) |
+| `SOURCE_URL` | `https://github.com/mediaworkbench/astrocat` | Link to the source code, shown in the app's settings (AGPL); point it to your fork if you change the code |
 
 Advanced (rarely needed): `LOGIN_MAX_FAILURES` (5) and `LOGIN_WINDOW_MINUTES` (15) for the login and invite-code rate limit, `WAIT_FOR_GENERATION_SECONDS` (90), `STALE_GENERATION_MINUTES` (5).
 
@@ -225,4 +225,4 @@ docker compose -f compose.yaml -f compose.dev.yaml up -d   # also publishes api 
 - Readings: [Gemma 4](https://ollama.com/library/gemma4) via Ollama
 - Fonts: Fraunces and Nunito (SIL Open Font License) via Fontsource
 
-AstroCat is free software under the **GNU Affero General Public License v3.0**, as required by `libephemeris`. If you run a modified version for other people, the AGPL requires offering them its source code; set `SOURCE_URL` so the app links to it.
+AstroCat is free software under the **GNU Affero General Public License v3.0** (see [LICENSE](LICENSE)), as required by `libephemeris`. Source: <https://github.com/mediaworkbench/astrocat>. If you run a modified version for other people, the AGPL requires offering them its source code; set `SOURCE_URL` so the app links to it.
