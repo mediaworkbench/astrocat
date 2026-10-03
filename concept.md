@@ -1,6 +1,6 @@
 # AstroCat — Concept
 
-> Status: MVP concept, v4 (2026-10-03) — M1 (engine), M2 (LLM) and M3 (API, database, login, scheduler) are built; this version includes what we learned there. Progress and tuning logs: [TASKS.md](TASKS.md).
+> Status: MVP concept, v6 (2026-10-03) — all five milestones are built: engine, LLM, API/database/scheduler, app, and Mira with her moods; this version includes what we learned there. Progress and tuning logs: [TASKS.md](TASKS.md).
 
 **AstroCat** is a mobile-first daily horoscope PWA. Mira, a charming cat guide, presents each user's personal daily reading, calculated from their own birth chart and today's planetary transits. A deterministic astrology engine decides *what* the day looks like; a local LLM only decides *how to say it* — in Mira's voice, in English, Spanish, or German.
 
@@ -43,13 +43,14 @@
 #### Feel
 
 - Cute but not childish; modern, clean, premium.
-- Celestial visuals: stars, moons, soft gradients, subtle glow.
+- Celestial visuals: stars, moons, soft gradients, subtle glow; a Moon phase icon for today's Moon, an occasional shooting star, and sections that appear one after another.
 - The cat is a knowledgeable companion, not just a mascot.
 - Personal, fun, and lightly magical rather than serious.
 
 #### Layout
 
-- Portrait, single column, designed for one-handed use. Mira sits at the top of the Today screen; content flows below.
+- Portrait, single column, designed for one-handed use. Mira sits at the top of the Today screen; content flows below. The headline and the start of the summary are visible without scrolling.
+- Dark night-sky theme only: the app is about the night sky, and a light theme is not planned.
 - The key visual above is landscape and has text baked in. For the app we need portrait-friendly art **without text in images** (titles and labels are real text, so they can be translated and are accessible).
 
 #### Screens
@@ -99,17 +100,23 @@
 - ES: "Hoy la Luna ronronea a tu favor: di eso amable que te has estado guardando."
 - DE: "Der Mond schnurrt heute auf deiner Seite – sag das Nette, das du dir bisher verkniffen hast."
 
-**Poses (visual)** — the engine's overall day score selects Mira's pose:
+**Poses (visual)** — the engine's overall day score selects Mira's pose. Each pose has its own illustration (from `mira-poses.png`) plus light and motion in the app:
 
-| Score | Pose | Description |
-|---|---|---|
-| 1 | sleepy | curled up on a cloud, one eye open |
-| 2 | cautious | sitting, ears slightly back, tail wrapped |
-| 3 | calm | sitting upright, gentle smile |
-| 4 | playful | batting at a star |
-| 5 | radiant | standing, glowing card held high (key visual) |
+| Score | Pose | Illustration | In the app |
+|---|---|---|---|
+| 1 | sleepy | curled up on a cloud, one eye half open, card beside her | cool, dim light; slow sway; "z z z" rising above her head |
+| 2 | cautious | sitting, worried look, card held close, tail wrapped | muted light, gentle breathing |
+| 3 | calm | sitting upright, content smile, card in her lap | warm glow, gentle breathing, two twinkles |
+| 4 | playful | on hind legs, batting at a smiling star | brighter glow, little hops |
+| 5 | radiant | card held high, eyes closed with joy, sparkles | strong pulsing glow, floating |
 
-**Assets:** create a character sheet first so Mira stays consistent across all poses (generated art drifts easily). A light idle animation (Rive or Lottie) is a polish item, not MVP-critical.
+Login and onboarding show the standing Mira from `mira-character.png`. While a reading is generated, she "reads the stars": her card glows and two stars circle slowly.
+
+**Assets:**
+- **Sources:** `mira-character.png` (standing Mira; the English text on her card was removed, so the image works in every language) and `mira-poses.png` (all five poses, generated from the prompts in [TASKS.md](TASKS.md), M5 log). No text in images (§2).
+- **App files:** `web/src/assets/mira.webp` (standing Mira) and `web/src/assets/poses/<pose>.webp`. A pose image replaces the standing Mira for that pose automatically; without one, the app falls back to the standing Mira with generated effects (dimming, clouds, an orbiting star, sparkles).
+- **Resolution:** each cat in the sources is about 430–530 px tall, slightly soft on 3× phone screens; exports of at least 1000 px per cat would fix that (same file names).
+- **Motion:** CSS only (no Rive or Lottie needed); all animation stops with the system setting "reduce motion".
 
 ---
 
@@ -123,7 +130,7 @@ Each reading contains:
 | Summary | LLM | 2–3 sentences |
 | Love, Work, Energy, Mood | text: LLM · paw rating (1–5): engine | 1–2 sentences each |
 | Mira's advice | LLM | 1 sentence |
-| "Why Mira says this" | engine + i18n templates (no LLM) | list of today's top factors, e.g. "Venus trine your natal Moon (5th house)" |
+| "Why Mira says this" | engine + i18n templates in the app (no LLM) | list of today's top factors, e.g. "Venus trine your Moon · supportive · 5th house: romance, play and creativity" |
 | Disclaimer | static i18n text | "For entertainment." |
 
 "Health" from v1 is renamed **Energy** to avoid medical territory.
@@ -369,16 +376,16 @@ Scores, Mira's pose, and the "Why" list come from the engine output, not from th
 
 | Service | Contents |
 |---|---|
-| `web` | Caddy serving the static frontend build and reverse-proxying `/api` to `api`. Single entry point. |
+| `web` | Caddy serving the static frontend build and reverse-proxying `/api` to `api`. Single entry point, port 80 (`WEB_PORT`). |
 | `api` | FastAPI app containing the astrology engine (`libephemeris`), LLM client, auth, and an in-process scheduler (APScheduler). |
 | `db` | PostgreSQL: users, sessions, natal charts, daily readings. |
 | Ollama | Runs natively on macOS, not in Docker. |
 
-**Frontend:** Vite + React + TypeScript, with i18n (e.g. `react-i18next`) for UI strings in EN/ES/DE. Next.js is not needed: there is no server-side rendering requirement, and FastAPI already owns the backend.
+**Frontend:** Vite + React + TypeScript, with `react-i18next` for UI strings in EN/ES/DE (before login from the browser language, after login from the profile). Fonts are bundled, so the app makes no requests to external services. Next.js is not needed: there is no server-side rendering requirement, and FastAPI already owns the backend. A Playwright script (`web/scripts/screenshots.mjs`) walks through the app at phone size in WebKit and Chromium for visual checks.
 
 **Dropped from v1:** separate `ephemeris` service (it's a library inside `api`), Redis (Postgres + in-process scheduler are enough at this scale).
 
-**Files:** `compose.yaml` (production: `db`, `api`; `web` follows in M4), `compose.dev.yaml` (adds ports on 127.0.0.1 for development and tests: db 55432, api 8000), `.env` (from `.env.example`; database password, Ollama model, session and scheduler settings). The `api` container runs `astrocat migrate` on every start, then `astrocat serve`.
+**Files:** `compose.yaml` (`web`, `api`, `db`), `compose.dev.yaml` (adds ports on 127.0.0.1 for development and tests: db 55432, api 8000), `.env` (from `.env.example`; database password, Ollama model, session and scheduler settings). The `api` container runs `astrocat migrate` on every start, then `astrocat serve`.
 
 ### 10.1 API
 
@@ -449,8 +456,8 @@ The riskiest parts (engine plausibility, LLM quality in 3 languages) come first.
 | M1 | Engine as CLI | Birth data + date → engine JSON (§7.1); unit tests with known charts; noon fallback works; `review --engine-only` shows varied scores over 30 days. | ✅ done |
 | M2 | LLM spike | Engine JSON → reading in EN/ES/DE; validation, retries, template fallback; a 14-day review (review tool, §6) per language passes a manual quality check: no jargon, correct weekdays, no obvious repetition. | ✅ done |
 | M3 | API + DB + auth | Login, onboarding (incl. city search and form of address), `GET /api/today`, scheduler, admin `create-user`; readings stored with recent-reading lookup from the database. | ✅ done |
-| M4 | Frontend | Login, onboarding, Today, Settings; mobile layout; i18n incl. "Why Mira says this" texts; manifest; `web` service (Caddy). | next |
-| M5 | Polish | Mira's character sheet and 5 poses, loading animation, celestial styling. | |
+| M4 | Frontend | Login, onboarding, Today, Settings; mobile layout; i18n incl. "Why Mira says this" texts; manifest; `web` service (Caddy). | ✅ done |
+| M5 | Polish | Mira from the character art, five pose illustrations, loading animation, Moon phase icon, celestial styling. | ✅ done |
 
 ---
 
@@ -469,6 +476,7 @@ The riskiest parts (engine plausibility, LLM quality in 3 languages) come first.
 
 - Final orbs, weights, and category mapping: calibrated in M1 on random charts; re-check with the 3 real users' charts once they are in the database.
 - Repeated favorite images across days (e.g. "flotter Spaziergang"): possibly pass recent suggestions to the prompt, or accept.
+- Mira's art: higher-resolution exports (≥ 1000 px per cat) of the character and pose images.
 - On quiet days the selection may consist only of house placements, and a Moon placement can be selected next to a Moon aspect (M1 observations). Readings were fine in M2; revisit only if users notice.
 
 ---

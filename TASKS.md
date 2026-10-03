@@ -1,76 +1,102 @@
-# Tasks — M3: API, database, login, onboarding, scheduler ✅
+# Tasks — M5: Mira and polish ✅
 
-Goal (see [concept.md](concept.md) §8–§11, §13): the engine and Mira's readings run as a FastAPI service in Docker, with PostgreSQL, invite-only login, onboarding data (incl. city search and form of address), on-demand readings and a background scheduler. The frontend follows in M4, so M3 is tested through the API and the CLI.
+Goal (see [concept.md](concept.md) §2, §3): Mira from the new character art (`mira-character.png`, transparent cut-out) instead of the placeholder from the key visual; five visible moods; a loading animation; celestial polish.
 
 **Done when:**
 
-- `docker compose up` starts `db` and `api`; migrations run automatically.
-- An admin creates a user with `astrocat create-user`; the user logs in, completes onboarding via the API and gets today's reading from `GET /api/today`.
-- The scheduler generates readings in the background without blocking requests; missed runs (Mac asleep) are caught up.
-- Tests cover auth, onboarding, places, reading storage (no duplicates, recent readings from the database) and the scheduler.
+- Mira appears everywhere from the new art, with no English text in the image.
+- Each of the five poses (sleepy, cautious, calm, playful, radiant) looks clearly different, and real pose images can be dropped in later without code changes.
+- "Mira is reading the stars" has its own animation; all motion respects "reduce motion".
+- Screenshots of all poses and of Today in both browsers look right.
 
 ---
 
-## Setup
+## Art
 
-- [x] Dependencies: FastAPI, Uvicorn, SQLAlchemy 2, Alembic, psycopg 3, argon2-cffi, APScheduler, tzdata
-- [x] Configuration from environment (`.env`, `.env.example`): database URL, Ollama, session lifetime, scheduler on/off
-- [x] `compose.yaml` with `db` (PostgreSQL) and `api`; `compose.dev.yaml` publishing ports on 127.0.0.1 for development and tests
-- [x] `api` Dockerfile (uv, Python 3.12); entrypoint runs migrations, then Uvicorn
+- [x] Cut Mira out of `mira-character.png`; remove the English text on her card ("HOROSCOPE / TODAY'S GUIDANCE")
+- [x] WebP with transparency for the app; new app icons (head on the night sky)
+- [x] Image prompts for real pose illustrations (same character, four more poses)
 
-## Database
+## Poses
 
-- [x] Models: `users`, `birth_profiles`, `sessions`, `daily_readings`, `places`, `place_names` (concept §11)
-- [x] Alembic migrations
-- [x] Unique constraint on the reading cache key `(user_id, local_date, language, input_hash)`
+- [x] Mira component: one image plus pose-specific light, motion and decorations (z z z, cloud, twinkles, orbiting star, sparkles)
+- [x] Optional dedicated pose images (`web/src/assets/poses/<pose>.webp`) are picked up automatically
+- [x] Pose gallery for review (development builds only)
 
-## Auth
+## Polish
 
-- [x] Password hashing with argon2
-- [x] Sessions: random token in an `HttpOnly`, `SameSite=Lax` cookie, only its hash stored; ~90 days; logout deletes the session
-- [x] Login rate limiting (per username and client)
-- [x] CLI: `astrocat create-user`, `astrocat reset-password`
-- [x] Change own password via the API
+- [x] Loading animation: Mira reading her glowing card, stars circling
+- [x] Moon phase icon next to the Moon line
+- [x] Staggered entry of the reading's sections
+- [x] An occasional shooting star in the sky
+- [x] Everything off with "reduce motion"
 
-## Places (city search)
+## Checks
 
-- [x] `astrocat places import`: download GeoNames `cities1000` once, load into `places` + `place_names` (alternate names, accent-insensitive)
-- [x] Search endpoint: prefix match, sorted by population, returns name, country, coordinates, timezone
-
-## Onboarding and settings
-
-- [x] `GET /api/me` (incl. "onboarding complete")
-- [x] Settings: display name, language, form of address, current timezone
-- [x] Birth data: date, optional time, place (from the search), optional UTC offset override
-
-## Readings
-
-- [x] Reading service: get or create the reading for (user, local date, language); `generating` status; a second request waits instead of starting another LLM call; stale `generating` rows are taken over
-- [x] Recent readings (last 3, same language) loaded from the database for the prompt
-- [x] `GET /api/today`: reading, paw ratings, pose, Moon, factors for "Why Mira says this"
-- [x] Changing birth data or the form of address produces a new reading (via `input_hash`)
-
-## Scheduler
-
-- [x] In-process APScheduler job every 15 minutes: for each onboarded user whose local day has started, generate today's reading if missing (catches up after sleep)
-- [x] One generation at a time (Ollama runs one model), never blocking API requests
-
-## Tests
-
-- [x] Test database (PostgreSQL in Docker), fake LLM client
-- [x] Auth: login, wrong password, rate limit, logout, session expiry, password change
-- [x] Onboarding and settings validation
-- [x] Places import (small fixture file) and search (accents, alternate names, population order)
-- [x] Readings: created once, reused, regenerated after birth-data change, recent readings, concurrent requests → one LLM call
-- [x] Scheduler: generates for users whose day started, skips others, catches up
-
-## End-to-end check
-
-- [x] In Docker with real Ollama: create user → login → onboarding → `GET /api/today` → reading; scheduler run in the logs
+- [x] Type check, tests, build
+- [x] Screenshots: pose gallery, loading, Today (WebKit + Chromium)
 
 ---
 
-## M3 log
+## M5 log
+
+- **Art:** `mira-character.png` (1376 × 768, transparent) contains one pose; the cat itself is about 504 × 490 px. Cut to the cat; the English card text ("HOROSCOPE / TODAY'S GUIDANCE") removed with OpenCV inpainting (only the dark text pixels, not the thumb), so the card is language-neutral. Exported as WebP with alpha (39 KB). New app icons: Mira's head on the app's night-sky gradient, with the raised paw faded out at the edge.
+- **Five moods from one illustration** (`web/src/mira.tsx`, styles in `styles.css`):
+  - sleepy: cooler, dimmed light, slow sway, "z z z" rising next to the head
+  - cautious: leaning back slightly, muted light, clouds drifting by
+  - calm: gentle breathing, warm glow, two quiet twinkles
+  - playful: a little hop, a star circling her, twinkles
+  - radiant: strong pulsing glow, floating, six sparkles
+  - loading ("reading the stars"): the card glows, two stars circle slowly
+- **Dedicated pose images can be dropped in:** `web/src/assets/poses/<pose>.webp` (sleepy, cautious, calm, playful, radiant) replaces the base image for that pose; the light, motion and decorations stay. Nothing else to change.
+- **Polish:** Moon phase icon next to the Moon line (drawn from the phase, waning phases mirrored), sections of the reading appear one after another, an occasional shooting star (every 17 s), everything off with "reduce motion". Pose gallery at `#/poses` in development builds (`npm run dev`).
+- **Checks:** 7 frontend tests (incl. Moon phase shapes), type check, build; screenshots of the pose gallery (WebKit) and a full walkthrough in English (WebKit/iPhone 15) with a real `gemma4:e4b` reading. Fixed after the first look: the "z" of the sleepy pose sat on the ear and was too small; a small moon decoration overlapped the card and was removed.
+- **Limits:** the source art is small (cat ≈ 500 px), so Mira is slightly soft on 3× phone screens; a larger export (≥ 1000 px) of the same art would fix that. With a single illustration the moods differ in light, motion and decorations, not in body language.
+
+- **Real pose illustrations (2026-10-03):** `mira-poses.png` (1536 × 1024, transparent) with all five poses, made from the prompts below. Cut apart automatically: each cat found by its opaque area, every pixel (incl. glow, sparkles and the playful star) assigned to the nearest cat with a soft 60 px transition between neighbors; glow below the feet faded out (a faint ray of the radiant pose had reached under the calm cat); cropped with a soft edge. Exported to `web/src/assets/poses/<pose>.webp` (55–71 KB each); the app picks them up automatically.
+  - With real art, the generated effects are toned down: no tilt or dimming, no extra clouds, stars or sparkles (the illustrations have their own). Kept: the light per mood, the motion, the "z z z" above the sleepy head, the two twinkles of the calm pose. All poses stand on the same ground line in a uniform frame.
+  - Login and onboarding keep the standing cut-out from `mira-character.png` (no pose there); the loading animation too, because the glowing card fits "reading the stars".
+  - Checked in the pose gallery and on Today (WebKit/iPhone, a real "playful" day).
+  - Still small source art: each cat is 430–530 px tall, so slightly soft on 3× screens.
+
+### Prompts for real pose illustrations
+
+Use the current `mira-character.png` as the reference image. Common part for every prompt:
+
+> Same character as the reference image: a young orange tabby cat named Mira with big amber eyes, a small pink nose, a cream belly and paws, a dark blue collar with an opal gem, and a tiny golden star on her right ear. She holds a glowing golden horoscope card with a crescent moon and a zodiac wheel, **without any text on the card**. Soft, painterly storybook style with gentle golden glow, same proportions and colors as the reference. Full body, centered, **transparent background**, no shadows on the ground, no text anywhere. At least 1200 px tall.
+
+Pose-specific endings:
+
+- **sleepy:** "Mira is curled up asleep on a small soft cloud, one eye half open, the card resting next to her."
+- **cautious:** "Mira sits upright with her ears slightly back and her tail wrapped around her paws, holding the card close to her chest, a little unsure but still cute."
+- **calm:** "Mira sits upright with a gentle, content smile, the card resting in her lap."
+- **playful:** "Mira stands on her hind legs and bats at a small glowing star with one paw, mouth open in a happy grin, the card in her other paw."
+- **radiant:** "Mira stands tall and holds the glowing card high above her head, eyes closed with joy, surrounded by a few sparkles."
+
+Save each as `web/src/assets/poses/<pose>.webp`, e.g. `cwebp -q 88 -alpha_q 100 -resize 0 1000 sleepy.png -o web/src/assets/poses/sleepy.webp`, then rebuild the web container.
+
+## Deferred
+
+- Higher-resolution exports of the pose art (≥ 1000 px per cat) → whenever available; same file names.
+- `astrocat review --user <username>` (review from the database) → when needed.
+
+## M4 log (done)
+
+- **Stack:** Vite 8, React 19, TypeScript 7, react-i18next, Vitest; fonts Fraunces (headings) and Nunito (text) bundled via Fontsource, so no requests to external font services. Production build: 98 KB JavaScript (gzip); the browser loads only the Latin font subsets it needs. Caddy serves the build on port 80 and proxies `/api`.
+- **Mira placeholder:** cut out of the key visual below the baked-in title; the leftover "de" of the slogan was painted over with the surrounding sky. The card still says "HOROSCOPE / TODAY'S GUIDANCE" in English until the real poses (M5). App icons: Mira's head.
+- **Screens:** login; onboarding in 3 steps (name, language, form of address → birth date/time or "I don't know" → place search or manual place, current timezone from the browser); Today (date, Mira, greeting, headline, Moon sign and phase, summary, 4 category cards with paw ratings, Mira's advice, expandable "Why Mira says this", disclaimer; "Mira is reading the stars" while generating, retries on `503`); settings (profile, birth data, password, logout, about with GeoNames attribution and the source link once `SOURCE_URL` is set).
+- **"Why Mira says this":** built in the app from the factor data, with grammar per language ("Venus trine your Moon", "Venus im Trigon zu deinem Mond", "Venus en trígono con tu Luna"), house names with English ordinals, house themes, exact Moon times, background theme, and a hint when the birth time is unknown.
+- **Visual check with Playwright** (`npm run screenshots`): WebKit/iPhone 15 in German and Chromium/Pixel 7 in Spanish, with real readings from `gemma4:e4b`. Found and fixed:
+  - Place-search pins rendered huge (SVG without a size) → icons default to 1.25em.
+  - Labels of button groups ("Sprache") not bold → one `.field` style for all labels.
+  - Stars shone through cards and inputs → more opaque surfaces.
+  - Mira filled the whole first screen on Today → smaller there; the headline and summary now start on the first screen.
+  - The sky gradient repeated per screen height (`background-attachment: fixed`, also unreliable on iOS) → the gradient lives on a fixed layer.
+- **Known limitations:**
+  - Birth places show GeoNames' international name ("Munich, DE", not "München"): `cities1000` has no language tags for alternate names.
+  - In Spanish and German UI texts Mira is female ("una gata", "keine Ärztin"), matching the name.
+
+## M3 log (done)
 
 - **Stack:** FastAPI, SQLAlchemy 2 + Alembic (migrations inside the package, run on every container start), psycopg 3, argon2-cffi, APScheduler 3, PostgreSQL 17. 142 tests (38 need the dev database; they skip with a hint if it isn't running).
 - **Decisions while building:**
@@ -84,11 +110,6 @@ Goal (see [concept.md](concept.md) §8–§11, §13): the engine and Mira's read
   - **Manual birth place** possible (name, coordinates, timezone) for places missing from the list.
   - **JSONB does not keep key order:** the API restores the category order (love, work, energy, mood) explicitly.
 - **End-to-end check (Docker, real Ollama, 2026-10-03):** create user → login → search "münch" (Munich first) → form of address → birth place via search → `GET /api/today`: German reading with feminine forms, 16.4 s on the first call (incl. model load), 30 ms from the cache. Simulated scheduler run "next morning 07:40": found the missing day, generated it in 8.8 s, nothing due afterwards. Demo user deleted again; the city list stays.
-
-## Deferred to later milestones
-
-- Frontend (login, onboarding, Today, Settings), "Why Mira says this" texts in EN/ES/DE, `web` service with Caddy → M4.
-- `astrocat review --user <username>` (review from the database) → when needed.
 
 ## M2 log (done)
 

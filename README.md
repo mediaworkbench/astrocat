@@ -13,12 +13,16 @@ Concept: [concept.md](concept.md) · progress and logs: [TASKS.md](TASKS.md) · 
 
 ```sh
 cp .env.example .env                 # then set POSTGRES_PASSWORD to a long random value
-docker compose up -d --build         # db + api; migrations run automatically
+docker compose up -d --build         # web (port 80) + api + db; migrations run automatically
 docker compose exec api astrocat places import       # city list for birth places (one-time, ~10 MB download)
 docker compose exec api astrocat create-user anna --display-name Anna --language de
 ```
 
-Users then log in and complete onboarding in the app (frontend: milestone M4). Until then, the API is reachable for development with `docker compose -f compose.yaml -f compose.dev.yaml up -d` at <http://localhost:8000/api/docs>.
+Then open `http://<ip-of-the-mac>/` on a phone in the same Wi-Fi, log in, and complete onboarding. In Safari, "Add to Home Screen" turns it into an app icon.
+
+- Give the Mac a fixed IP (DHCP reservation in the router) and allow incoming connections for Docker in the macOS firewall.
+- The Mac must be awake for the app to be reachable; readings missed while it slept are generated on the next visit or scheduler run.
+- Development: `docker compose -f compose.yaml -f compose.dev.yaml up -d` additionally publishes the API on <http://localhost:8000/api/docs> and the database on 127.0.0.1:55432; `cd web && npm run dev` runs the app with hot reload on port 5173.
 
 Other admin commands: `astrocat reset-password <username>`, `astrocat migrate`.
 

@@ -1,4 +1,4 @@
-# AstroCat services (concept §10). Ollama runs natively on macOS, not in Docker.
+# AstroCat services (concept §10): web (Caddy + app), api, db. Ollama runs natively on macOS, not in Docker.
 # Development: docker compose -f compose.yaml -f compose.dev.yaml up -d
 name: astrocat
 
@@ -27,6 +27,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_SOURCE_URL: ${SOURCE_URL:-}
+    ports:
+      # The only port reachable from the home network (concept §10.2).
+      - "${WEB_PORT:-80}:80"
+    depends_on:
+      - api
     restart: unless-stopped
 
 volumes:
