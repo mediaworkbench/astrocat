@@ -779,6 +779,18 @@ input[type="search"] {
   appearance: none;
 }
 
+/* iOS Safari gives date and time inputs an intrinsic minimum width that ignores width: 100%,
+   which made the page scroll sideways on narrow phones. It also centers their value. */
+input[type="date"],
+input[type="time"] {
+  display: block;
+  min-width: 0;
+}
+
+input::-webkit-date-and-time-value {
+  text-align: left;
+}
+
 input::placeholder {
   color: var(--faint);
 }
