@@ -187,7 +187,7 @@ The engine selects keywords; the LLM combines them into prose. The tables live a
 ## 6. LLM layer
 
 - **Runtime:** Ollama on the macOS host (outside Docker), reached from containers at `http://host.docker.internal:11434`.
-- **Model:** `gemma4:e2b`; base URL and model name are configurable via `.env`.
+- **Model:** `gemma4:e4b` (chosen in M2: `e2b` is fine for English but too weak in Spanish and German; `e4b` takes ~8 s per reading); base URL and model name are configurable via `.env`.
 - **Role:** turns the engine JSON into prose. It never sees raw positions or degrees, and it never decides ratings or poses.
 
 #### Prompt structure

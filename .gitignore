@@ -13,3 +13,6 @@ review*.html
 
 # macOS
 .DS_Store
+
+# Agents
+TASKS.md

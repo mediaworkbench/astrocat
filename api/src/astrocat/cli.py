@@ -47,18 +47,40 @@ def day(profile_path: str, day, payload: bool, lang: str | None) -> None:
 
 
 @main.command()
+@click.option("--profile", "profile_path", required=True, type=click.Path(exists=True, dir_okay=False))
+@click.option("--date", "day", type=click.DateTime(["%Y-%m-%d"]), help="Local date (default: today).")
+@click.option("--lang", type=click.Choice(LANGUAGES), help="Reading language (default: the profile's).")
+@click.option("--model", help="Ollama model (default: $OLLAMA_MODEL or gemma4:e4b).")
+def reading(profile_path: str, day, lang: str | None, model: str | None) -> None:
+    """Generate Mira's reading for one day (needs Ollama)."""
+    from astrocat.llm import OllamaClient, generate_reading
+
+    profile = _profile(profile_path)
+    target = day.date() if day else date.today()
+    _engine, result = generate_reading(profile, target, OllamaClient(model=model), lang)
+    _echo_json(result.to_dict())
+
+
+@main.command()
 @click.option("--profile", "profile_paths", required=True, multiple=True, type=click.Path(exists=True, dir_okay=False))
 @click.option("--from", "start", type=click.DateTime(["%Y-%m-%d"]), help="First date (default: today).")
 @click.option("--days", default=14, show_default=True, type=click.IntRange(1, 366))
-@click.option("--engine-only", is_flag=True, help="Skip the LLM. Required until M2.")
+@click.option("--engine-only", is_flag=True, help="Skip the LLM (fast tuning of the engine).")
+@click.option(
+    "--lang", type=click.Choice(LANGUAGES), help="Reading language for all profiles (default: each profile's)."
+)
+@click.option("--model", help="Ollama model (default: $OLLAMA_MODEL or gemma4:e4b).")
 @click.option("--out", default="review.html", show_default=True, type=click.Path(dir_okay=False))
-def review(profile_paths: tuple[str, ...], start, days: int, engine_only: bool, out: str) -> None:
+def review(
+    profile_paths: tuple[str, ...], start, days: int, engine_only: bool, lang: str | None, model: str | None, out: str
+) -> None:
     """Render a multi-day HTML review report."""
+    from astrocat.llm import OllamaClient
     from astrocat.review import render_review
 
-    if not engine_only:
-        raise click.UsageError("The LLM part of the review arrives in M2; use --engine-only for now.")
     profiles = [_profile(p) for p in profile_paths]
     first = start.date() if start else date.today()
-    Path(out).write_text(render_review(profiles, first, days), encoding="utf-8")
+    client = None if engine_only else OllamaClient(model=model)
+    html = render_review(profiles, first, days, client, lang, progress=lambda msg: click.echo(msg, err=True))
+    Path(out).write_text(html, encoding="utf-8")
     click.echo(f"Wrote {out}")

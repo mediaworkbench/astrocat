@@ -1,0 +1,110 @@
+# German language pack: names, prompt example, checks, and fallback texts.
+name: German
+register: informal "du"
+
+planets:
+  sun: Sonne
+  moon: Mond
+  mercury: Merkur
+  venus: Venus
+  mars: Mars
+  jupiter: Jupiter
+  saturn: Saturn
+  uranus: Uranus
+  neptune: Neptun
+  pluto: Pluto
+  ascendant: Aszendent
+
+signs:
+  aries: Widder
+  taurus: Stier
+  gemini: Zwillinge
+  cancer: Krebs
+  leo: Löwe
+  virgo: Jungfrau
+  libra: Waage
+  scorpio: Skorpion
+  sagittarius: Schütze
+  capricorn: Steinbock
+  aquarius: Wassermann
+  pisces: Fische
+
+moon_phases:
+  new_moon: Neumond
+  waxing_crescent: zunehmende Sichel
+  first_quarter: erstes Viertel
+  waxing_gibbous: zunehmender Mond
+  full_moon: Vollmond
+  waning_gibbous: abnehmender Mond
+  last_quarter: letztes Viertel
+  waning_crescent: abnehmende Sichel
+
+weekdays: [Montag, Dienstag, Mittwoch, Donnerstag, Freitag, Samstag, Sonntag]
+months: [Januar, Februar, März, April, Mai, Juni, Juli, August, September, Oktober, November, Dezember]
+date_format: "{weekday}, {day}. {month}"
+
+example:
+  headline: Leise Pfoten, kleine Schritte
+  summary: Der Mond sucht sich heute ein gemütliches Plätzchen, und deine Gefühle auch. Alles bewegt sich langsam, also lass es zu. Kleine Gesten zählen heute doppelt.
+  sections:
+    love: Jemand in deiner Nähe freut sich über ein bisschen Aufmerksamkeit. Eine kurze Nachricht bewirkt viel.
+    work: Es geht langsam voran, aber es geht voran. Nimm dir eine Aufgabe vor und bring sie zu Ende.
+    energy: Dein Akku ist halb voll. Streck dich, trink Wasser und lass die Extra-Besorgung ausfallen.
+    mood: Vielleicht bist du heute empfindlicher als sonst. Das ist kein Fehler, das ist dein Radar.
+  advice: Tu dir heute noch etwas Gutes, bevor der Tag vorbei ist.
+
+# Prompt hints (rules 3, 8, 10).
+avoid: ["Vertraue", "innerer Rhythmus", "lass dich leiten", "Leichtigkeit", "Gemüt", "Harmonie", "Wohlgefühl", "positive Energie"]
+gender_hint: "in German avoid gendered nouns for the reader (not \"Gewinnerin\" or \"Gewinner\"); rephrase with verbs instead."
+headline_case: ""
+
+gendered: []
+stopwords: [der, die, das, und, du, dich, dir, ist, ein, eine, heute, mit, zu, nicht, den, dein, deine, es, sich, auf]
+
+jargon: ['\btrigon(e|en)?\b', '\bsextil(e|en)?\b', '\bquadrat(e|en)?\b', '\bkonjunktion(en)?\b', '\btransit(e|en)?\b', '\bradix', '\bgeburtshoroskop', '\baszendent(en)?\b', '\borbis\b', '\brückläufig', '\b\d+\.\s*haus\b']
+forbidden: ['\btod\b', '\bsterben\b', '\bunfall', '\bunfälle', '\bkrankheit', '\bdiagnose', '\boperation\b', '\binvestier', '\baktien?\b', '\bscheidung', '\bschluss machen\b']
+
+fallback:
+  headline:
+    1: Ein ruhiger, sanfter {weekday}
+    2: Ein {weekday} der kleinen Schritte
+    3: Ein ausgeglichener {weekday}
+    4: Ein heller, freundlicher {weekday}
+    5: Ein {weekday} mit extra Glanz
+  summary:
+    1: Der Mond steht im Zeichen {moon_sign} und bittet heute um Geduld. Plane locker und sei nett zu dir selbst.
+    2: Der Mond im Zeichen {moon_sign} bringt ein paar Stolpersteine. Nimm eins nach dem anderen, dann sortiert sich vieles von selbst.
+    3: Der Mond im Zeichen {moon_sign} sorgt heute für Ruhe. Ein guter Tag für stetige Fortschritte und einfache Freuden.
+    4: Der Mond im Zeichen {moon_sign} gibt dir Schwung. Sag Ja zu den schönen Dingen, die dir begegnen.
+    5: Mit dem Mond im Zeichen {moon_sign} stehen die Sterne heute auf deiner Seite. Genieß es und teile deine gute Laune.
+  advice:
+    1: Ausruhen ist auch produktiv.
+    2: Such dir eine wichtige Sache aus und lass den Rest warten.
+    3: Halte es einfach und genieß die kleinen Momente.
+    4: Melde dich heute bei jemandem, den du magst.
+    5: Wag dich an das, was du schon lange aufschiebst.
+  sections:
+    love:
+      1: Schenk deinen Liebsten heute etwas mehr Geduld.
+      2: Kleine Missverständnisse sind möglich, also frag lieber nach.
+      3: Ein ruhiger, stabiler Tag für deine Beziehungen.
+      4: Warme Momente mit anderen ergeben sich heute ganz leicht.
+      5: Dein Charme ist heute auf Hochtouren, also zeig ihn ruhig.
+    work:
+      1: Es geht vielleicht langsam voran, also konzentrier dich aufs Nötigste.
+      2: Rechne mit kleinen Verzögerungen und plane etwas Puffer ein.
+      3: Stetige Mühe bringt dir heute stetige Ergebnisse.
+      4: Gute Ideen kommen dir heute leicht, also schreib sie auf.
+      5: Ein großartiger Tag, um etwas Ehrgeiziges anzupacken.
+    energy:
+      1: Dein Akku ist niedrig, also ruh dich aus, wann immer es geht.
+      2: Teil dir deine Kräfte ein und mach kurze Pausen.
+      3: Deine Energie ist heute ausgeglichen und stabil.
+      4: Du hast heute guten Antrieb, also nutz ihn.
+      5: Du steckst voller Energie, perfekt für Bewegung und Taten.
+    mood:
+      1: Du bist vielleicht empfindlich, also geh sanft mit dir um.
+      2: Ein paar Sorgen tauchen vielleicht auf, aber sie ziehen vorbei.
+      3: Deine Stimmung ist heute ruhig und ausgeglichen.
+      4: Deine Stimmung ist leicht und freundlich.
+      5: Deine gute Laune strahlt und steckt andere an.

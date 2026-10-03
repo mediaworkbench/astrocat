@@ -1,0 +1,111 @@
+# Spanish language pack: names, prompt example, checks, and fallback texts.
+name: Spanish (Spain)
+register: informal "tú", never "vosotros"
+
+planets:
+  sun: Sol
+  moon: Luna
+  mercury: Mercurio
+  venus: Venus
+  mars: Marte
+  jupiter: Júpiter
+  saturn: Saturno
+  uranus: Urano
+  neptune: Neptuno
+  pluto: Plutón
+  ascendant: Ascendente
+
+signs:
+  aries: Aries
+  taurus: Tauro
+  gemini: Géminis
+  cancer: Cáncer
+  leo: Leo
+  virgo: Virgo
+  libra: Libra
+  scorpio: Escorpio
+  sagittarius: Sagitario
+  capricorn: Capricornio
+  aquarius: Acuario
+  pisces: Piscis
+
+moon_phases:
+  new_moon: luna nueva
+  waxing_crescent: luna creciente
+  first_quarter: cuarto creciente
+  waxing_gibbous: gibosa creciente
+  full_moon: luna llena
+  waning_gibbous: gibosa menguante
+  last_quarter: cuarto menguante
+  waning_crescent: luna menguante
+
+weekdays: [lunes, martes, miércoles, jueves, viernes, sábado, domingo]
+months: [enero, febrero, marzo, abril, mayo, junio, julio, agosto, septiembre, octubre, noviembre, diciembre]
+date_format: "{weekday}, {day} de {month}"
+
+example:
+  headline: Patitas suaves, pasos lentos
+  summary: Hoy la Luna busca un rincón cómodo, y tus emociones también. Todo avanza despacio, así que déjalo fluir. Los pequeños gestos valen el doble.
+  sections:
+    love: Alguien cercano agradecería un poco de tu atención. Un mensaje corto puede hacer mucho.
+    work: El progreso es lento pero real. Elige una tarea y termínala antes de pasar a la siguiente.
+    energy: Tu batería está a la mitad. Estírate, bebe agua y deja ese recado extra para otro día.
+    mood: Quizá te sientas más sensible de lo normal. No es un defecto, es tu radar funcionando.
+  advice: Haz algo bonito por ti antes de que termine el día.
+
+# Prompt hints (rules 3, 8, 10).
+avoid: ["fluir", "conexión", "confía en tu intuición", "ligereza", "momento perfecto", "permítete", "energía positiva", "buenas vibraciones"]
+gender_hint: "in Spanish never use adjectives or participles that agree with the reader (not \"enfocada\" or \"enfocado\", not \"cómoda\" or \"cómodo\"); rephrase with verbs or nouns instead (\"te concentras\", \"te sientes a gusto\")."
+headline_case: ", in sentence case"
+
+# Adjectives that would assume the reader's gender after verbs like "sentir" or "estar".
+gendered: ['\b(sientes|siente|sentir|sentirás|estás|estar|eres|notas|ves|quedas)\s+(?:\w+\s+){0,3}?(segur|valorad|abrumad|reflexiv|cómod|enfocad|conectad|satisfech|generos|content|preparad|motivad|agotad|cansad|inspirad|agradecid|orgullos|animad|relajad|centrad|apreciad|list|tranquil|ocupad)[ao]\b', '\bcontigo mism[ao]\b', '\bti mism[ao]\b']
+stopwords: [el, la, de, que, y, tu, te, es, en, un, una, hoy, para, con, los, las, lo, por, se, más]
+
+jargon: ['\btr[ií]gonos?\b', '\bsextil(es)?\b', '\bcuadraturas?\b', '\bconjunci[oó]n(es)?\b', '\bnatal(es)?\b', '\btr[aá]nsitos?\b', '\bascendente\b', '\borbes?\b', '\bretr[oó]grad[oa]s?\b', '\bcasa \d+\b', '\b\d+(ª|a)? casa\b']
+forbidden: ['\bmuerte\b', '\bmorir\b', '\baccidentes?\b', '\benfermedad(es)?\b', '\bdiagn[oó]stic', '\bcirug[ií]a\b', '\binvert(ir|ión|iones)\b', '\binversi[oó]n(es)?\b', '\bdivorcio\b', '\brompe(r)? con\b']
+
+fallback:
+  headline:
+    1: Un {weekday} tranquilo y sin prisas
+    2: Un {weekday} de pasos pequeños
+    3: Un {weekday} sereno y estable
+    4: Un {weekday} luminoso y amable
+    5: Un {weekday} con brillo extra
+  summary:
+    1: Con la Luna en {moon_sign}, hoy toca tener paciencia. Haz planes ligeros y trátate con cariño.
+    2: La Luna en {moon_sign} trae algún bache en el camino. Ve paso a paso y todo se irá ordenando.
+    3: La Luna en {moon_sign} mantiene la calma hoy. Es un buen día para avanzar con constancia y disfrutar de lo sencillo.
+    4: La Luna en {moon_sign} te da un impulso alegre. Di que sí a las cosas buenas que lleguen.
+    5: Con la Luna en {moon_sign}, las estrellas están de tu lado hoy. Disfrútalo y contagia tu buen humor.
+  advice:
+    1: Descansar también es avanzar.
+    2: Elige una cosa importante y deja el resto para después.
+    3: Hazlo sencillo y disfruta de los pequeños momentos.
+    4: Escríbele hoy a alguien que te cae bien.
+    5: Atrévete con eso que llevas tiempo posponiendo.
+  sections:
+    love:
+      1: Ten un poco más de paciencia con tus seres queridos hoy.
+      2: Puede haber pequeños malentendidos, así que pregunta antes de suponer.
+      3: Es un día tranquilo y estable para tus relaciones.
+      4: Hoy los momentos cálidos con los demás surgen con facilidad.
+      5: Tu encanto está en su mejor momento, así que déjalo brillar.
+    work:
+      1: Las cosas pueden ir lentas, así que céntrate en lo realmente necesario.
+      2: Cuenta con algún retraso y reserva tiempo extra.
+      3: Un esfuerzo constante trae resultados constantes hoy.
+      4: Las buenas ideas llegan con facilidad, así que apúntalas.
+      5: Es un gran día para lanzarte a algo ambicioso.
+    energy:
+      1: Tu batería está baja, así que descansa cuando puedas.
+      2: Ve a tu ritmo y haz pausas cortas.
+      3: Tu energía está equilibrada y estable.
+      4: Hoy tienes un buen impulso, así que aprovéchalo.
+      5: Tienes energía de sobra, ideal para moverte y actuar.
+    mood:
+      1: Quizá te sientas sensible, así que trátate con suavidad.
+      2: Pueden aparecer algunas preocupaciones, pero pasarán.
+      3: Tu ánimo está sereno y equilibrado.
+      4: Tu ánimo está ligero y alegre.
+      5: Tu buen humor brilla y es contagioso.

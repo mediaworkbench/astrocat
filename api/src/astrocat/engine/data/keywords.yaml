@@ -64,20 +64,21 @@ moon_signs:
   pisces: [dreamy, intuitive]
 
 # Category flavor by score band: low = 1-2 paws, mid = 3, high = 4-5.
+# Many entries per band, so consecutive days rarely get the same hints.
 category_bands:
   love:
-    low: [misunderstandings, needing space, patience with loved ones]
-    mid: [steady bonds, small gestures, quiet closeness]
-    high: [warmth, easy connection, flirtation, feeling appreciated]
+    low: [misunderstandings, needing space, patience with loved ones, mixed signals, old grudges, crossed wires, feeling unheard]
+    mid: [steady bonds, small gestures, quiet closeness, shared routines, a familiar face, simple kindness, catching up]
+    high: [warmth, easy connection, flirtation, feeling appreciated, a sweet surprise, laughter together, open hearts, a spark]
   work:
-    low: [friction, delays, patience with structures]
-    mid: [routine progress, steady effort, one thing at a time]
-    high: [momentum, recognition, good ideas, productive focus]
+    low: [friction, delays, patience with structures, red tape, a stubborn task, unclear instructions, too many meetings]
+    mid: [routine progress, steady effort, one thing at a time, tidy loose ends, a clear to-do list, quiet focus, small wins]
+    high: [momentum, recognition, good ideas, productive focus, a smart solution, being noticed, bold first steps, teamwork]
   energy:
-    low: [low battery, pace yourself, rest]
-    mid: [steady, balanced pace, gentle movement]
-    high: [drive, momentum, feeling strong, zest]
+    low: [low battery, pace yourself, rest, early night, slow morning, gentle stretching, saying no]
+    mid: [steady, balanced pace, gentle movement, a walk outside, regular meals, fresh air, a good routine]
+    high: [drive, momentum, feeling strong, zest, sport, getting things moving, an adventure, dancing]
   mood:
-    low: [sensitive, overthinking, need for comfort]
-    mid: [calm, even-tempered, reflective]
-    high: [cheerful, light-hearted, optimistic]
+    low: [sensitive, overthinking, need for comfort, thin-skinned, worries, a cozy blanket, quiet time]
+    mid: [calm, even-tempered, reflective, content, curious, unhurried, thoughtful]
+    high: [cheerful, light-hearted, optimistic, playful, confident, sunny, generous, in high spirits]

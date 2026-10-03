@@ -1,0 +1,115 @@
+# English language pack: names, prompt example, checks, and fallback texts.
+name: English
+register: use "you"
+
+planets:
+  sun: Sun
+  moon: Moon
+  mercury: Mercury
+  venus: Venus
+  mars: Mars
+  jupiter: Jupiter
+  saturn: Saturn
+  uranus: Uranus
+  neptune: Neptune
+  pluto: Pluto
+  ascendant: Ascendant
+
+signs:
+  aries: Aries
+  taurus: Taurus
+  gemini: Gemini
+  cancer: Cancer
+  leo: Leo
+  virgo: Virgo
+  libra: Libra
+  scorpio: Scorpio
+  sagittarius: Sagittarius
+  capricorn: Capricorn
+  aquarius: Aquarius
+  pisces: Pisces
+
+moon_phases:
+  new_moon: new moon
+  waxing_crescent: waxing crescent
+  first_quarter: first quarter
+  waxing_gibbous: waxing gibbous
+  full_moon: full moon
+  waning_gibbous: waning gibbous
+  last_quarter: last quarter
+  waning_crescent: waning crescent
+
+weekdays: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+months: [January, February, March, April, May, June, July, August, September, October, November, December]
+date_format: "{weekday}, {month} {day}"
+
+# Style example for the prompt (a different, fictional day).
+example:
+  headline: Soft paws, slow steps
+  summary: The Moon is looking for a cozy spot today, and so are your feelings. Things move gently, so let them. Small kindnesses count double.
+  sections:
+    love: Someone close would love a little attention from you. A short message goes a long way.
+    work: Progress is slow but real. Pick one task and finish it before you chase the next one.
+    energy: Your battery is at half. Stretch, drink some water, and skip the extra errand.
+    mood: You may feel more sensitive than usual. That's not a flaw, it's your radar working.
+  advice: Do one kind thing for yourself before the day is over.
+
+# Prompt hints (rules 3, 8, 10).
+avoid: ["embrace", "let things unfold", "trust your instincts", "inner light", "positive energy", "settles over you", "navigate", "flow"]
+gender_hint: "English rarely needs gendered words, so just avoid gendered nouns for the reader."
+headline_case: ", in sentence case (capitalize only the first word and proper nouns such as weekdays, planets and signs)"
+
+gendered: []
+
+# Language check: common words of this language.
+stopwords: [the, and, you, your, to, is, a, of, for, with, today, it, be, this, in, that, are, on, can, will]
+
+# Regular expressions (case-insensitive) that must not appear in a reading.
+jargon: ['\btrines?\b', '\bsextiles?\b', '\bconjunctions?\b', '\bnatal\b', '\btransit(s|ing)?\b', '\bascendant\b', '\borbs?\b', '\bretrograde\b', '\b\d+(st|nd|rd|th) house\b']
+forbidden: ['\bdeath\b', '\bdying\b', '\baccidents?\b', '\billness(es)?\b', '\bdiseases?\b', '\bdiagnos', '\bsurgery\b', '\binvest(ing|ment)?\b', '\bstocks?\b', '\blawsuit', '\bdivorce\b', '\bbreak up\b']
+
+# Template fallback: by score (1-5) for sections, by overall score for the rest.
+fallback:
+  headline:
+    1: A slow and gentle {weekday}
+    2: A {weekday} for small steps
+    3: A steady, easygoing {weekday}
+    4: A bright and friendly {weekday}
+    5: A {weekday} with extra sparkle
+  summary:
+    1: With the Moon in {moon_sign}, today asks for patience. Keep your plans light and be kind to yourself.
+    2: The Moon in {moon_sign} brings a few bumps along the way. Take things one at a time and they will sort themselves out.
+    3: The Moon in {moon_sign} keeps things calm today. It's a good day for steady progress and simple pleasures.
+    4: The Moon in {moon_sign} puts a spring in your step. Say yes to the good things that come your way.
+    5: With the Moon in {moon_sign}, the stars are on your side today. Enjoy it and share the good mood.
+  advice:
+    1: Rest is productive too.
+    2: Pick one thing that matters and let the rest wait.
+    3: Keep it simple and enjoy the small moments.
+    4: Reach out to someone you like today.
+    5: Try the thing you've been putting off.
+  sections:
+    love:
+      1: Give your loved ones a little extra patience today.
+      2: Small misunderstandings are possible, so ask before you assume.
+      3: It's a quiet, steady day for your relationships.
+      4: Warm moments with others come easily today.
+      5: Your charm is at full strength, so let people see it.
+    work:
+      1: Things may move slowly, so focus on what is truly necessary.
+      2: Expect a few delays and plan some extra time.
+      3: Steady effort brings steady results today.
+      4: Good ideas come easily, so write them down.
+      5: It's a great day to tackle something ambitious.
+    energy:
+      1: Your battery is low, so rest when you can.
+      2: Pace yourself and take short breaks.
+      3: Your energy is balanced and steady.
+      4: You have good drive today, so use it.
+      5: You're full of energy, perfect for movement and action.
+    mood:
+      1: You may feel sensitive, so treat yourself gently.
+      2: A few worries may pop up, but they will pass.
+      3: Your mood is calm and even.
+      4: Your spirits are light and friendly.
+      5: Your good mood shines, and it's contagious.
