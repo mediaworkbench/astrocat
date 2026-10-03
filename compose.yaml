@@ -25,6 +25,9 @@ services:
       DATABASE_URL: postgresql+psycopg://astrocat:${POSTGRES_PASSWORD}@db:5432/astrocat
       # Ollama on the Mac by default; set OLLAMA_BASE_URL in .env for another host.
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      # Docker Desktop (macOS) provides host.docker.internal itself; on Linux (e.g. a Raspberry Pi) this maps it to the host.
+      - "host.docker.internal:host-gateway"
     depends_on:
       db:
         condition: service_healthy
@@ -37,6 +40,7 @@ services:
         VITE_SOURCE_URL: ${SOURCE_URL:-}
     ports:
       # The only port reachable from the home network (concept §10.2).
+      # Behind a reverse proxy on the same machine, bind it to localhost: WEB_PORT=127.0.0.1:8094
       - "${WEB_PORT:-80}:80"
     depends_on:
       - api

@@ -17,10 +17,22 @@ export function Register({ onRegistered, onLogin }: { onRegistered: (me: Me) => 
   const [error, setError] = useState<string | null>(null);
 
   const normalized = username.trim().toLowerCase();
-  const valid = USERNAME.test(normalized) && password.length >= 8 && code.trim().length > 0;
+
+  /** Says which field is wrong, instead of a silently disabled button. */
+  function problem(): string | null {
+    if (!USERNAME.test(normalized)) return t("register.invalidUsername");
+    if (password.length < 8) return t("register.passwordShort");
+    if (!code.trim()) return t("register.codeMissing");
+    return null;
+  }
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    const invalid = problem();
+    if (invalid) {
+      setError(invalid);
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -95,7 +107,7 @@ export function Register({ onRegistered, onLogin }: { onRegistered: (me: Me) => 
             {error}
           </p>
         )}
-        <button className="button primary block" type="submit" disabled={!valid || busy}>
+        <button className="button primary block" type="submit" disabled={busy}>
           {busy ? t("register.submitting") : t("register.submit")}
         </button>
       </form>
