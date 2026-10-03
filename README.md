@@ -82,7 +82,7 @@ ollama run gemma4:e4b "Say hello in one sentence."   # quick check
 ### 2. Get the code and configure it
 
 ```sh
-git clone https://github.com/mediaworkbench/astrocat.git
+git clone git@github.com:mediaworkbench/astrocat.git
 cd astrocat
 cp .env.example .env
 ```
