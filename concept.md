@@ -114,7 +114,7 @@
 Login and onboarding show the standing Mira from `artwork/standing.png`, holding up her card. While a reading is generated, she "reads the stars": a golden halo pulses behind her card and two stars circle slowly.
 
 **Assets:**
-- **Sources** in `artwork/`: `standing.png` and the five poses `sleepy.png`, `cautious.png`, `calm.png`, `playful.png`, `radiant.png` (single illustrations, 2026-10-06), all in one style: crisp outlines, a dark card with golden lines, no glow halo. `mira-character.png` is the first character art; the app icons still come from it. No text in images (§2).
+- **Sources** in `artwork/`: `standing.png` and the five poses `sleepy.png`, `cautious.png`, `calm.png`, `playful.png`, `radiant.png` (single illustrations, 2026-10-06), all in one style: crisp outlines, a dark card with golden lines, no glow halo. Sources should have a transparent background (`radiant.png` has a white one, removed during the export, see [TASKS.md](TASKS.md)). `mira-character.png` is the first character art; the app icons still come from it. No text in images (§2).
 - **App files:** `web/src/assets/mira.webp` (standing Mira, from `standing.png`) and `web/src/assets/poses/<pose>.webp`. A pose image replaces the standing Mira for that pose automatically; without one, the app falls back to the standing Mira with generated effects (dimming, clouds, an orbiting star, sparkles).
 - **Resolution:** the poses are exported at 900 px height (sleepy, which is wide: 1000 px width), sharp on 3× phone screens, 110–205 KB each (the standing Mira likewise).
 - **Motion:** CSS only (no Rive or Lottie needed); all animation stops with the system setting "reduce motion".

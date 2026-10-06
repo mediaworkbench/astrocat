@@ -38,26 +38,37 @@ Goal (see [concept.md](concept.md) §2, §3): Mira from the new character art (`
 
 ---
 
-## New pose art (2026-10-06)
+## New Mira art (2026-10-06) ✅
 
-- **Four new illustrations** in `artwork/` (calm, cautious, playful, radiant; 1024 × 1536, transparent, clean edges): cropped to the figure with a 16 px margin, scaled to 900 px height, WebP with alpha (115–167 KB) in `web/src/assets/poses/`. Much sharper than the first set; calm is now a meditating Mira without the card. Its own sparkles replace the app's generated twinkles. Checked in the pose gallery and on Today.
-- **Paths:** the source images moved to `artwork/`; README and concept updated (the key visual is `artwork/astrocat.png`). `mira-poses.png` (source of the current sleepy pose) is no longer in the repo; only `web/src/assets/poses/sleepy.webp` remains.
-- **Sleepy (added the same day):** `artwork/sleepy.png` (1145 × 1374), cropped and exported at 1000 px width (205 KB); the "z z z" sits above her head next to the ear star, as before. Checked in the pose gallery.
-- **Standing Mira (added the same day):** `artwork/standing.png` (1024 × 1536) replaces `web/src/assets/mira.webp` (900 px height, 112 KB) on login, onboarding and the loading screen. The loading effect was adjusted: a golden halo pulses *behind* the raised card (positioned for the new card; the old effect lit the card from the front, which only turned the dark card gray). All app images are now in one style.
-- **Not updated:** the app icons still show Mira's head from the first character art (`mira-character.png`).
+All Mira images in the app now come from one set of illustrations in `artwork/`, in one style: crisp outlines, a dark card with golden lines, no glow halo.
 
-### Prompts for the sleepy pose and the standing Mira (new style)
+| App image | Source in `artwork/` | Source size | App file | Export |
+| --- | --- | --- | --- | --- |
+| sleepy | `sleepy.png` | 1145 × 1374 | `web/src/assets/poses/sleepy.webp` | 1000 px wide (the pose is wide), 205 KB |
+| cautious | `cautious.png` | 1024 × 1536 | `web/src/assets/poses/cautious.webp` | 900 px high, 116 KB |
+| calm | `calm.png` | 1024 × 1536 | `web/src/assets/poses/calm.webp` | 900 px high, 167 KB |
+| playful | `playful.png` | 1024 × 1536 | `web/src/assets/poses/playful.webp` | 900 px high, 145 KB |
+| radiant | `radiant.png` (second version) | 848 × 1264 | `web/src/assets/poses/radiant.webp` | 900 px high, 84 KB |
+| standing (login, onboarding, loading) | `standing.png` | 1024 × 1536 | `web/src/assets/mira.webp` | 900 px high, 112 KB |
 
-Use one of the new images (e.g. `artwork/radiant.png`) as the reference. Common part:
+- **Processing:** crop to the visible figure (alpha > 8) with a 16 px margin, scale, WebP with alpha (`cwebp -q 85 -alpha_q 100`). All images are sharp on 3× phone screens.
+- **radiant.png has no transparency** (white background). It is cut out during the export: near-white pixels connected to the image border (whiteness < 45) become transparent, the edge is pulled in by one pixel and softened, and edge pixels are un-blended from white, so there is no light fringe on the dark sky. Checked up close at fur, belly, card and sparkles. The source file stays unchanged; a transparent export would make this step unnecessary.
+- **Effects in the app adjusted to the new art:**
+  - calm brings its own sparkles, so the app's generated twinkles are off for it; it is now a meditating Mira without the card.
+  - sleepy: the "z z z" sits above her head next to the ear star.
+  - Loading screen: a golden halo pulses *behind* the card the standing Mira holds up (the old effect lit the card from the front, which only turned the dark card gray).
+- **Checks:** pose gallery (`#/poses`), login, loading screen, and Today with real readings (radiant, playful) in WebKit/iPhone; type check, tests, build.
+- **Other files:** `artwork/astrocat.png` is the key visual (README, concept); `artwork/mira-character.png` is the first character art. `mira-poses.png` (the first pose set) is no longer in the repo.
+- **Not updated:** the app icons still show Mira's head from `mira-character.png` (see Deferred).
+
+### Prompts used for the sleepy pose and the standing Mira
+
+Kept for future images in the same style. Reference image: one of the new poses (e.g. `artwork/playful.png`). Common part:
 
 > Same character and style as the reference image: a young orange tabby cat named Mira with big amber eyes, a small pink nose, cream belly and paws, a dark blue collar with an opal gem, and a tiny golden star on her right ear. Clean, crisp storybook illustration with soft shading, no glow halo around her. Her horoscope card is dark navy with a thin golden border, a golden crescent moon and a golden zodiac wheel, **without any text**. Full body, centered, **transparent background**, no ground shadow, no text anywhere. Portrait format, 1024 × 1536.
 
-Pose-specific endings:
-
-- **sleepy** → save as `artwork/sleepy.png`: "Mira is curled up asleep on a small, soft white cloud, eyes closed, her tail wrapped around her, the card tucked under one paw."
-- **standing** → save as `artwork/standing.png`: "Mira stands on her hind legs and proudly holds the card up next to her face with one paw, the card face towards the viewer, a friendly closed-mouth smile."
-
-When they exist, the same steps as for the four poses apply (crop, 900 px, WebP). The standing image replaces `web/src/assets/mira.webp`; the glowing-card effect of the loading screen is positioned for the old card and needs a small adjustment then.
+- **sleepy:** "Mira is curled up asleep on a small, soft white cloud, eyes closed, her tail wrapped around her, the card tucked under one paw."
+- **standing:** "Mira stands on her hind legs and proudly holds the card up next to her face with one paw, the card face towards the viewer, a friendly closed-mouth smile."
 
 ## Day switch and Ollama fixes (2026-10-03)
 
