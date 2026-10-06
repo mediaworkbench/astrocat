@@ -55,7 +55,7 @@ function Zzz({ x, y }: { x: number; y: number }) {
 function Decorations({ pose, dedicated }: { pose: Pose; dedicated: boolean }) {
   if (dedicated) {
     if (pose === "sleepy") return <Zzz x={54} y={40} />; // just above her head, which rests on the left
-    if (pose === "calm") return <Decorations pose="calm" dedicated={false} />;
+    // calm: the illustration has its own sparkles
     return null;
   }
   switch (pose) {

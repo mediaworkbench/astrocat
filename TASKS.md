@@ -38,6 +38,25 @@ Goal (see [concept.md](concept.md) §2, §3): Mira from the new character art (`
 
 ---
 
+## New pose art (2026-10-06)
+
+- **Four new illustrations** in `artwork/` (calm, cautious, playful, radiant; 1024 × 1536, transparent, clean edges): cropped to the figure with a 16 px margin, scaled to 900 px height, WebP with alpha (115–167 KB) in `web/src/assets/poses/`. Much sharper than the first set; calm is now a meditating Mira without the card. Its own sparkles replace the app's generated twinkles. Checked in the pose gallery and on Today.
+- **Paths:** the source images moved to `artwork/`; README and concept updated (the key visual is `artwork/astrocat.png`). `mira-poses.png` (source of the current sleepy pose) is no longer in the repo; only `web/src/assets/poses/sleepy.webp` remains.
+- **Still in the first style:** the sleepy pose and the standing Mira (login, onboarding, "reading the stars"). Prompts for both in the new style below.
+
+### Prompts for the sleepy pose and the standing Mira (new style)
+
+Use one of the new images (e.g. `artwork/radiant.png`) as the reference. Common part:
+
+> Same character and style as the reference image: a young orange tabby cat named Mira with big amber eyes, a small pink nose, cream belly and paws, a dark blue collar with an opal gem, and a tiny golden star on her right ear. Clean, crisp storybook illustration with soft shading, no glow halo around her. Her horoscope card is dark navy with a thin golden border, a golden crescent moon and a golden zodiac wheel, **without any text**. Full body, centered, **transparent background**, no ground shadow, no text anywhere. Portrait format, 1024 × 1536.
+
+Pose-specific endings:
+
+- **sleepy** → save as `artwork/sleepy.png`: "Mira is curled up asleep on a small, soft white cloud, eyes closed, her tail wrapped around her, the card tucked under one paw."
+- **standing** → save as `artwork/standing.png`: "Mira stands on her hind legs and proudly holds the card up next to her face with one paw, the card face towards the viewer, a friendly closed-mouth smile."
+
+When they exist, the same steps as for the four poses apply (crop, 900 px, WebP). The standing image replaces `web/src/assets/mira.webp`; the glowing-card effect of the loading screen is positioned for the old card and needs a small adjustment then.
+
 ## Day switch and Ollama fixes (2026-10-03)
 
 - **Day switch:** "Today · Tomorrow · Day after tomorrow" (EN/DE/ES) at the top of the Today screen. `GET /api/reading?offset=0|1|2`; `/api/today` stays. Each day is loaded once and kept in memory; late answers for a day the user already left are ignored. The scheduler prepares the next two days (`GENERATE_DAYS_AHEAD=2`), today first for everyone. Checked in WebKit: tomorrow 2.2 s (generated on demand), the day after 0.1 s (prepared), back to today from memory.
@@ -92,7 +111,7 @@ Save each as `web/src/assets/poses/<pose>.webp`, e.g. `cwebp -q 88 -alpha_q 100 
 
 ## Deferred
 
-- Higher-resolution exports of the pose art (≥ 1000 px per cat) → whenever available; same file names.
+- New-style versions of the sleepy pose and the standing Mira (prompts in "New pose art") → whenever available.
 - `astrocat review --user <username>` (review from the database) → when needed.
 
 ## M4 log (done)

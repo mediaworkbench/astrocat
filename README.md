@@ -6,7 +6,7 @@ AstroCat is a small, self-hosted horoscope app for a household or a group of fri
 
 It runs entirely on one computer at home (a Mac or a Linux machine such as a Raspberry Pi): a deterministic astrology engine decides *what* the day looks like, and a local language model ([Ollama](https://ollama.com)) only decides *how to say it*. Birth data never leaves the machine.
 
-![AstroCat key visual](astrocat.png)
+![AstroCat key visual](artwork/astrocat.png)
 
 ## Features
 

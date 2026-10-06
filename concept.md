@@ -9,7 +9,7 @@
 - "Your daily stars, delivered by a cat."
 - "Daily horoscopes with a little more magic."
 
-![AstroCat key visual](astrocat.png)
+![AstroCat key visual](artwork/astrocat.png)
 
 ---
 
@@ -101,22 +101,22 @@
 - ES: "Hoy la Luna ronronea a tu favor: di eso amable que te has estado guardando."
 - DE: "Der Mond schnurrt heute auf deiner Seite – sag das Nette, das du dir bisher verkniffen hast."
 
-**Poses (visual)** — the engine's overall day score selects Mira's pose. Each pose has its own illustration (from `mira-poses.png`) plus light and motion in the app:
+**Poses (visual)** — the engine's overall day score selects Mira's pose. Each pose has its own illustration (sources in `artwork/`) plus light and motion in the app:
 
 | Score | Pose | Illustration | In the app |
 |---|---|---|---|
 | 1 | sleepy | curled up on a cloud, one eye half open, card beside her | cool, dim light; slow sway; "z z z" rising above her head |
-| 2 | cautious | sitting, worried look, card held close, tail wrapped | muted light, gentle breathing |
-| 3 | calm | sitting upright, content smile, card in her lap | warm glow, gentle breathing, two twinkles |
-| 4 | playful | on hind legs, batting at a smiling star | brighter glow, little hops |
+| 2 | cautious | sitting, worried look, hugging the card, tail wrapped | muted light, gentle breathing |
+| 3 | calm | sitting cross-legged, meditating with closed eyes, sparkles around her | warm glow, gentle breathing |
+| 4 | playful | on hind legs, reaching for a glowing star, card in the other paw | brighter glow, little hops |
 | 5 | radiant | card held high, eyes closed with joy, sparkles | strong pulsing glow, floating |
 
-Login and onboarding show the standing Mira from `mira-character.png`. While a reading is generated, she "reads the stars": her card glows and two stars circle slowly.
+Login and onboarding show the standing Mira from `artwork/mira-character.png`. While a reading is generated, she "reads the stars": her card glows and two stars circle slowly.
 
 **Assets:**
-- **Sources:** `mira-character.png` (standing Mira; the English text on her card was removed, so the image works in every language) and `mira-poses.png` (all five poses, generated from the prompts in [TASKS.md](TASKS.md), M5 log). No text in images (§2).
+- **Sources** in `artwork/`: `calm.png`, `cautious.png`, `playful.png`, `radiant.png` (single illustrations, 1024 × 1536, 2026-10-06) and `mira-character.png` (standing Mira; the English text on her card was removed in the app version, so it works in every language). The sleepy pose and the standing Mira are still in the first, softer style (golden glowing card, halo); prompts for new versions in the same style as the other four are in [TASKS.md](TASKS.md). No text in images (§2).
 - **App files:** `web/src/assets/mira.webp` (standing Mira) and `web/src/assets/poses/<pose>.webp`. A pose image replaces the standing Mira for that pose automatically; without one, the app falls back to the standing Mira with generated effects (dimming, clouds, an orbiting star, sparkles).
-- **Resolution:** each cat in the sources is about 430–530 px tall, slightly soft on 3× phone screens; exports of at least 1000 px per cat would fix that (same file names).
+- **Resolution:** the new poses are exported at 900 px height (sharp on 3× phone screens, 115–167 KB each); the sleepy pose and the standing Mira are still about 500 px and slightly soft.
 - **Motion:** CSS only (no Rive or Lottie needed); all animation stops with the system setting "reduce motion".
 
 ---
