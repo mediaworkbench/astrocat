@@ -42,7 +42,9 @@ Goal (see [concept.md](concept.md) §2, §3): Mira from the new character art (`
 
 - **Four new illustrations** in `artwork/` (calm, cautious, playful, radiant; 1024 × 1536, transparent, clean edges): cropped to the figure with a 16 px margin, scaled to 900 px height, WebP with alpha (115–167 KB) in `web/src/assets/poses/`. Much sharper than the first set; calm is now a meditating Mira without the card. Its own sparkles replace the app's generated twinkles. Checked in the pose gallery and on Today.
 - **Paths:** the source images moved to `artwork/`; README and concept updated (the key visual is `artwork/astrocat.png`). `mira-poses.png` (source of the current sleepy pose) is no longer in the repo; only `web/src/assets/poses/sleepy.webp` remains.
-- **Still in the first style:** the sleepy pose and the standing Mira (login, onboarding, "reading the stars"). Prompts for both in the new style below.
+- **Sleepy (added the same day):** `artwork/sleepy.png` (1145 × 1374), cropped and exported at 1000 px width (205 KB); the "z z z" sits above her head next to the ear star, as before. Checked in the pose gallery.
+- **Standing Mira (added the same day):** `artwork/standing.png` (1024 × 1536) replaces `web/src/assets/mira.webp` (900 px height, 112 KB) on login, onboarding and the loading screen. The loading effect was adjusted: a golden halo pulses *behind* the raised card (positioned for the new card; the old effect lit the card from the front, which only turned the dark card gray). All app images are now in one style.
+- **Not updated:** the app icons still show Mira's head from the first character art (`mira-character.png`).
 
 ### Prompts for the sleepy pose and the standing Mira (new style)
 
@@ -111,7 +113,7 @@ Save each as `web/src/assets/poses/<pose>.webp`, e.g. `cwebp -q 88 -alpha_q 100 
 
 ## Deferred
 
-- New-style versions of the sleepy pose and the standing Mira (prompts in "New pose art") → whenever available.
+- App icons from the new art (e.g. Mira's head from `artwork/standing.png`) → if wanted.
 - `astrocat review --user <username>` (review from the database) → when needed.
 
 ## M4 log (done)

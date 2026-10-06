@@ -451,16 +451,16 @@ p {
 .mira.reading .mira-body {
   animation: breathe 3s ease-in-out infinite;
 }
+/* A golden halo behind the dark card the standing Mira holds up (artwork/standing.png), in the frame of .mira. */
 .card-glow {
   position: absolute;
-  left: 2%;
-  top: 6%;
-  width: 34%;
-  height: 52%;
-  border-radius: 14%;
-  rotate: -6deg;
-  background: radial-gradient(closest-side, rgb(255 236 180 / 0.75), transparent);
-  mix-blend-mode: screen;
+  left: 10%;
+  top: -7%;
+  width: 39%;
+  height: 39%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(255 214 120 / 0.85), rgb(255 214 120 / 0.25) 60%, transparent);
+  filter: blur(6px);
   animation: card-glow 2.2s ease-in-out infinite;
 }
 

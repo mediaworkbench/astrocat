@@ -111,8 +111,8 @@ export function Mira({ pose, small, reading }: { pose?: string; small?: boolean;
     <div className={classes} data-pose={p ?? "calm"} data-art={dedicated ? "pose" : "base"}>
       <div className="mira-glow" aria-hidden="true" />
       <div className="mira-body">
-        <img src={dedicated ?? baseUrl} alt="Mira" draggable={false} />
         {reading && <div className="card-glow" aria-hidden="true" />}
+        <img src={dedicated ?? baseUrl} alt="Mira" draggable={false} />
       </div>
       {(p || reading) && (
         <svg className="mira-deco" viewBox="0 0 100 100" aria-hidden="true">
