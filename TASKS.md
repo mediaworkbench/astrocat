@@ -1,44 +1,18 @@
-# Tasks — M5: Mira and polish ✅
+# Tasks
 
-Goal (see [concept.md](concept.md) §2, §3): Mira from the new character art (`mira-character.png`, transparent cut-out) instead of the placeholder from the key visual; five visible moods; a loading animation; celestial polish.
+**Status (2026-10-07):** all milestones M1–M5 from [concept.md](concept.md) §13 are done, plus the changes listed under "After M5". There is no active milestone.
 
-**Done when:**
+## Open
 
-- Mira appears everywhere from the new art, with no English text in the image.
-- Each of the five poses (sleepy, cautious, calm, playful, radiant) looks clearly different, and real pose images can be dropped in later without code changes.
-- "Mira is reading the stars" has its own animation; all motion respects "reduce motion".
-- Screenshots of all poses and of Today in both browsers look right.
-
----
-
-## Art
-
-- [x] Cut Mira out of `mira-character.png`; remove the English text on her card ("HOROSCOPE / TODAY'S GUIDANCE")
-- [x] WebP with transparency for the app; new app icons (head on the night sky)
-- [x] Image prompts for real pose illustrations (same character, four more poses)
-
-## Poses
-
-- [x] Mira component: one image plus pose-specific light, motion and decorations (z z z, cloud, twinkles, orbiting star, sparkles)
-- [x] Optional dedicated pose images (`web/src/assets/poses/<pose>.webp`) are picked up automatically
-- [x] Pose gallery for review (development builds only)
-
-## Polish
-
-- [x] Loading animation: Mira reading her glowing card, stars circling
-- [x] Moon phase icon next to the Moon line
-- [x] Staggered entry of the reading's sections
-- [x] An occasional shooting star in the sky
-- [x] Everything off with "reduce motion"
-
-## Checks
-
-- [x] Type check, tests, build
-- [x] Screenshots: pose gallery, loading, Today (WebKit + Chromium)
+- App icons from the new art (e.g. Mira's head from `artwork/standing.png`) → if wanted.
+- `astrocat review --user <username>` (review from the database) → when needed.
+- Open questions from real use (calibration with the real charts, recurring images in readings, "quiet days"): see [concept.md](concept.md) §15.
 
 ---
 
-## New Mira art (2026-10-06) ✅
+## After M5
+
+### New Mira art (2026-10-06/07)
 
 All Mira images in the app now come from one set of illustrations in `artwork/`, in one style: crisp outlines, a dark card with golden lines, no glow halo.
 
@@ -48,11 +22,11 @@ All Mira images in the app now come from one set of illustrations in `artwork/`,
 | cautious | `cautious.png` | 1024 × 1536 | `web/src/assets/poses/cautious.webp` | 900 px high, 116 KB |
 | calm | `calm.png` | 1024 × 1536 | `web/src/assets/poses/calm.webp` | 900 px high, 167 KB |
 | playful | `playful.png` | 1024 × 1536 | `web/src/assets/poses/playful.webp` | 900 px high, 145 KB |
-| radiant | `radiant.png` (second version) | 848 × 1264 | `web/src/assets/poses/radiant.webp` | 900 px high, 84 KB |
+| radiant | `radiant.png` (third version, 2026-10-07) | 1024 × 1536 | `web/src/assets/poses/radiant.webp` | 900 px high, 159 KB |
 | standing (login, onboarding, loading) | `standing.png` | 1024 × 1536 | `web/src/assets/mira.webp` | 900 px high, 112 KB |
 
 - **Processing:** crop to the visible figure (alpha > 8) with a 16 px margin, scale, WebP with alpha (`cwebp -q 85 -alpha_q 100`). All images are sharp on 3× phone screens.
-- **radiant.png has no transparency** (white background). It is cut out during the export: near-white pixels connected to the image border (whiteness < 45) become transparent, the edge is pulled in by one pixel and softened, and edge pixels are un-blended from white, so there is no light fringe on the dark sky. Checked up close at fur, belly, card and sparkles. The source file stays unchanged; a transparent export would make this step unnecessary.
+- **radiant went through three versions.** The second one (848 × 1264) had a white background, which was cut out during the export. The third (2026-10-07) is transparent again like the others, so that step is no longer needed; checked up close at the fur edges and sparkles (clean, no light fringe).
 - **Effects in the app adjusted to the new art:**
   - calm brings its own sparkles, so the app's generated twinkles are off for it; it is now a meditating Mira without the card.
   - sleepy: the "z z z" sits above her head next to the ear star.
@@ -61,7 +35,7 @@ All Mira images in the app now come from one set of illustrations in `artwork/`,
 - **Other files:** `artwork/astrocat.png` is the key visual (README, concept); `artwork/mira-character.png` is the first character art. `mira-poses.png` (the first pose set) is no longer in the repo.
 - **Not updated:** the app icons still show Mira's head from `mira-character.png` (see Deferred).
 
-### Prompts used for the sleepy pose and the standing Mira
+#### Prompts used for the sleepy pose and the standing Mira
 
 Kept for future images in the same style. Reference image: one of the new poses (e.g. `artwork/playful.png`). Common part:
 
@@ -70,7 +44,7 @@ Kept for future images in the same style. Reference image: one of the new poses 
 - **sleepy:** "Mira is curled up asleep on a small, soft white cloud, eyes closed, her tail wrapped around her, the card tucked under one paw."
 - **standing:** "Mira stands on her hind legs and proudly holds the card up next to her face with one paw, the card face towards the viewer, a friendly closed-mouth smile."
 
-## Day switch and Ollama fixes (2026-10-03)
+### Day switch and Ollama fixes (2026-10-03)
 
 - **Day switch:** "Today · Tomorrow · Day after tomorrow" (EN/DE/ES) at the top of the Today screen. `GET /api/reading?offset=0|1|2`; `/api/today` stays. Each day is loaded once and kept in memory; late answers for a day the user already left are ignored. The scheduler prepares the next two days (`GENERATE_DAYS_AHEAD=2`), today first for everyone. Checked in WebKit: tomorrow 2.2 s (generated on demand), the day after 0.1 s (prepared), back to today from memory.
 - **Bug found while testing:** `OLLAMA_BASE_URL=host.docker.internal` (no scheme, no port) in `.env` made every generation fail, and all readings fell back to templates, which then counted as final. Fixes:
@@ -78,14 +52,16 @@ Kept for future images in the same style. Reference image: one of the new poses 
   - Template readings caused by an Ollama outage are regenerated by the next scheduler run; template readings after failed checks are not retried.
 - 158 tests.
 
-## Self-registration with invite code (2026-10-03)
+### Self-registration with invite code (2026-10-03)
 
 - Decided: registration in the app, protected by an invite code (`REGISTRATION_CODE` in `.env`; empty = off). Alternatives considered: open registration (any guest on the Wi-Fi could sign up and use the Mac's Ollama), open with an on/off switch.
 - API: `GET /api/auth/registration`, `POST /api/auth/register` (constant-time code check, wrong codes rate-limited like logins, username rule shared with the CLI, logs in right away). 5 new tests (147 in total).
 - App: "Create account" link on the login screen only when enabled; registration screen in EN/ES/DE; afterwards onboarding with the name prefilled. Checked in WebKit/iPhone: link, wrong code message, successful registration → onboarding.
 - Local `.env` got a random code (`mira-…`); `.env.example` leaves it empty.
 
-## M5 log
+## M5 log (done)
+
+Goal (concept §2, §3): Mira from the character art instead of the placeholder from the key visual; five visible moods; a loading animation; celestial polish. All done: art and app icons, the Mira component with pose-specific light, motion and decorations, dedicated pose images picked up automatically, pose gallery (`#/poses`, development builds), loading animation, Moon phase icon, staggered sections, shooting star, everything off with "reduce motion"; checked with type check, tests, build and screenshots in WebKit and Chromium. The art was later replaced by a complete new set (see "After M5").
 
 - **Art:** `mira-character.png` (1376 × 768, transparent) contains one pose; the cat itself is about 504 × 490 px. Cut to the cat; the English card text ("HOROSCOPE / TODAY'S GUIDANCE") removed with OpenCV inpainting (only the dark text pixels, not the thumb), so the card is language-neutral. Exported as WebP with alpha (39 KB). New app icons: Mira's head on the app's night-sky gradient, with the raised paw faded out at the edge.
 - **Five moods from one illustration** (`web/src/mira.tsx`, styles in `styles.css`):
@@ -106,7 +82,7 @@ Kept for future images in the same style. Reference image: one of the new poses 
   - Checked in the pose gallery and on Today (WebKit/iPhone, a real "playful" day).
   - Still small source art: each cat is 430–530 px tall, so slightly soft on 3× screens.
 
-### Prompts for real pose illustrations
+### Prompts for the first pose set (historical; the current prompts are under "After M5")
 
 Use the current `mira-character.png` as the reference image. Common part for every prompt:
 
@@ -121,11 +97,6 @@ Pose-specific endings:
 - **radiant:** "Mira stands tall and holds the glowing card high above her head, eyes closed with joy, surrounded by a few sparkles."
 
 Save each as `web/src/assets/poses/<pose>.webp`, e.g. `cwebp -q 88 -alpha_q 100 -resize 0 1000 sleepy.png -o web/src/assets/poses/sleepy.webp`, then rebuild the web container.
-
-## Deferred
-
-- App icons from the new art (e.g. Mira's head from `artwork/standing.png`) → if wanted.
-- `astrocat review --user <username>` (review from the database) → when needed.
 
 ## M4 log (done)
 
